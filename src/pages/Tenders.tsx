@@ -227,6 +227,7 @@ export default function Tenders() {
               key={release.ocid || index}
               release={release}
               onViewDetails={handleViewDetails}
+              currentProvince={filters.province}
             />
           ))}
         </div>

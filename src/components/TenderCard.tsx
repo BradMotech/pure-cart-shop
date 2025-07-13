@@ -8,17 +8,28 @@ import { TenderApiService } from '@/services/tenderApi';
 interface TenderCardProps {
   release: Release;
   onViewDetails: (release: Release) => void;
+  currentProvince?: string;
 }
 
-export function TenderCard({ release, onViewDetails }: TenderCardProps) {
+export function TenderCard({ release, onViewDetails, currentProvince = 'gauteng' }: TenderCardProps) {
   const tender = release.tender;
   const buyer = release.buyer;
   
-  // Get province name from common mapping
+  // Get province name from current filter
   const getProvinceName = () => {
-    // This would ideally come from the actual data, but for now we'll show a default
-    // In a real app, you'd pass the current province filter or extract it from data
-    return 'Gauteng';
+    const provinceMap: { [key: string]: string } = {
+      'gauteng': 'Gauteng',
+      'western-cape': 'Western Cape',
+      'eastern-cape': 'Eastern Cape',
+      'kwazulu-natal': 'KwaZulu-Natal',
+      'limpopo': 'Limpopo',
+      'mpumalanga': 'Mpumalanga',
+      'northern-cape': 'Northern Cape',
+      'north-west': 'North West',
+      'free-state': 'Free State',
+      'all-provinces': 'All Provinces'
+    };
+    return provinceMap[currentProvince] || 'South Africa';
   };
   
   if (!tender) return null;

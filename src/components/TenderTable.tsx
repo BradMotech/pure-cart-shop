@@ -30,6 +30,7 @@ interface TenderTableProps {
   onPageChange: (page: number) => void;
   onViewDetails: (release: Release) => void;
   isLoading?: boolean;
+  currentProvince?: string;
 }
 
 export function TenderTable({
@@ -39,13 +40,24 @@ export function TenderTable({
   pageSize,
   onPageChange,
   onViewDetails,
-  isLoading
+  isLoading,
+  currentProvince = 'gauteng'
 }: TenderTableProps) {
-  // Get province name from common mapping  
+  // Get province name from current filter
   const getProvinceName = () => {
-    // This would ideally come from the actual data, but for now we'll show a default
-    // In a real app, you'd pass the current province filter or extract it from data
-    return 'Gauteng';
+    const provinceMap: { [key: string]: string } = {
+      'gauteng': 'Gauteng',
+      'western-cape': 'Western Cape',
+      'eastern-cape': 'Eastern Cape',
+      'kwazulu-natal': 'KwaZulu-Natal',
+      'limpopo': 'Limpopo',
+      'mpumalanga': 'Mpumalanga',
+      'northern-cape': 'Northern Cape',
+      'north-west': 'North West',
+      'free-state': 'Free State',
+      'all-provinces': 'All Provinces'
+    };
+    return provinceMap[currentProvince] || 'South Africa';
   };
 
   const formatValue = (release: Release) => {

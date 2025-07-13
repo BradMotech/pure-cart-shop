@@ -254,6 +254,7 @@ export default function TenderTableView() {
             onPageChange={handlePageChange}
             onViewDetails={handleViewDetails}
             isLoading={isLoading}
+            currentProvince={filters.province}
           />
         )}
       </div>
