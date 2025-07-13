@@ -52,7 +52,7 @@ export function TenderSearch({ filters, onFiltersChange, isLoading }: TenderSear
   const hasActiveFilters = filters.searchQuery || filters.status !== 'all' || filters.category !== 'all' || filters.province !== 'gauteng';
 
   return (
-    <div className="space-y-4 p-6 bg-card rounded-lg shadow-card border">
+    <div className="space-y-3 sm:space-y-4 p-3 sm:p-6 bg-card rounded-lg shadow-card border animate-fade-in">
       {/* Search Input */}
       <div className="relative">
         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -60,18 +60,18 @@ export function TenderSearch({ filters, onFiltersChange, isLoading }: TenderSear
           placeholder="Search tenders by title, description, or OCID..."
           value={filters.searchQuery}
           onChange={(e) => handleSearchChange(e.target.value)}
-          className="pl-10 pr-4"
+          className="pl-10 pr-4 h-11 sm:h-10"
           disabled={isLoading}
         />
       </div>
 
       {/* Filters Row */}
-      <div className="flex flex-wrap gap-2 sm:gap-4 items-center">
+      <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-2 sm:gap-4 items-start">
         {/* Status Filter */}
-        <div className="flex items-center gap-2">
-          <span className="text-xs sm:text-sm font-medium text-muted-foreground whitespace-nowrap">Status:</span>
+        <div className="flex flex-col gap-1">
+          <span className="text-xs font-medium text-muted-foreground">Status</span>
           <Select value={filters.status} onValueChange={handleStatusChange} disabled={isLoading}>
-            <SelectTrigger className="w-[120px] sm:w-[140px]">
+            <SelectTrigger className="w-full h-9">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -87,10 +87,10 @@ export function TenderSearch({ filters, onFiltersChange, isLoading }: TenderSear
         </div>
 
         {/* Category Filter */}
-        <div className="flex items-center gap-2">
-          <span className="text-xs sm:text-sm font-medium text-muted-foreground whitespace-nowrap">Category:</span>
+        <div className="flex flex-col gap-1">
+          <span className="text-xs font-medium text-muted-foreground">Category</span>
           <Select value={filters.category} onValueChange={handleCategoryChange} disabled={isLoading}>
-            <SelectTrigger className="w-[140px] sm:w-[160px]">
+            <SelectTrigger className="w-full h-9">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -108,10 +108,10 @@ export function TenderSearch({ filters, onFiltersChange, isLoading }: TenderSear
         </div>
 
         {/* Province Filter */}
-        <div className="flex items-center gap-2">
-          <span className="text-xs sm:text-sm font-medium text-muted-foreground whitespace-nowrap">Province:</span>
+        <div className="flex flex-col gap-1">
+          <span className="text-xs font-medium text-muted-foreground">Province</span>
           <Select value={filters.province} onValueChange={handleProvinceChange} disabled={isLoading}>
-            <SelectTrigger className="w-[140px] sm:w-[160px]">
+            <SelectTrigger className="w-full h-9">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -129,11 +129,11 @@ export function TenderSearch({ filters, onFiltersChange, isLoading }: TenderSear
           </Select>
         </div>
 
-        {/* Sort By */}
-        <div className="flex items-center gap-2">
-          <span className="text-xs sm:text-sm font-medium text-muted-foreground whitespace-nowrap">Sort by:</span>
+        {/* Sort By - Full width on mobile */}
+        <div className="col-span-2 sm:col-span-1 flex flex-col gap-1">
+          <span className="text-xs font-medium text-muted-foreground">Sort by</span>
           <Select value={filters.sortBy} onValueChange={handleSortChange} disabled={isLoading}>
-            <SelectTrigger className="w-[120px] sm:w-[140px]">
+            <SelectTrigger className="w-full h-9">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -145,29 +145,31 @@ export function TenderSearch({ filters, onFiltersChange, isLoading }: TenderSear
             </SelectContent>
           </Select>
         </div>
+      </div>
 
-        {/* Clear Filters */}
-        {hasActiveFilters && (
+      {/* Clear Filters */}
+      {hasActiveFilters && (
+        <div className="flex justify-center sm:justify-start">
           <Button
             variant="outline"
             size="sm"
             onClick={clearFilters}
-            className="flex items-center gap-1"
+            className="flex items-center gap-2 hover-scale"
             disabled={isLoading}
           >
             <X className="h-3 w-3" />
-            Clear
+            Clear Filters
           </Button>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Active Filters Display */}
       {hasActiveFilters && (
-        <div className="flex flex-wrap gap-2 pt-2 border-t">
-          <span className="text-sm font-medium text-muted-foreground">Active filters:</span>
+        <div className="flex flex-wrap gap-2 pt-3 border-t">
+          <span className="text-xs font-medium text-muted-foreground">Active filters:</span>
           {filters.searchQuery && (
-            <Badge variant="outline" className="flex items-center gap-1">
-              Search: "{filters.searchQuery}"
+            <Badge variant="outline" className="flex items-center gap-1 text-xs">
+              Search: "{filters.searchQuery.length > 20 ? filters.searchQuery.substring(0, 20) + '...' : filters.searchQuery}"
               <X 
                 className="h-3 w-3 cursor-pointer hover:text-destructive" 
                 onClick={() => handleSearchChange('')}
@@ -175,7 +177,7 @@ export function TenderSearch({ filters, onFiltersChange, isLoading }: TenderSear
             </Badge>
           )}
           {filters.status !== 'all' && (
-            <Badge variant="outline" className="flex items-center gap-1">
+            <Badge variant="outline" className="flex items-center gap-1 text-xs">
               Status: {filters.status}
               <X 
                 className="h-3 w-3 cursor-pointer hover:text-destructive" 
@@ -184,8 +186,8 @@ export function TenderSearch({ filters, onFiltersChange, isLoading }: TenderSear
             </Badge>
           )}
           {filters.category !== 'all' && (
-            <Badge variant="outline" className="flex items-center gap-1">
-              Category: {filters.category}
+            <Badge variant="outline" className="flex items-center gap-1 text-xs">
+              Category: {filters.category === 'computerProgrammingConsultancy' ? 'IT Services' : filters.category}
               <X 
                 className="h-3 w-3 cursor-pointer hover:text-destructive" 
                 onClick={() => handleCategoryChange('all')}
@@ -193,7 +195,7 @@ export function TenderSearch({ filters, onFiltersChange, isLoading }: TenderSear
             </Badge>
           )}
           {filters.province !== 'gauteng' && (
-            <Badge variant="outline" className="flex items-center gap-1">
+            <Badge variant="outline" className="flex items-center gap-1 text-xs">
               Province: {filters.province.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}
               <X 
                 className="h-3 w-3 cursor-pointer hover:text-destructive" 

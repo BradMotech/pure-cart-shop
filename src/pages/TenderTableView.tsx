@@ -143,36 +143,39 @@ export default function TenderTableView() {
 
   return (
     <div className="min-h-screen bg-gradient-subtle">
-      <div className="container mx-auto px-4 py-6 space-y-6">
+      <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 space-y-4 sm:space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col space-y-3 sm:space-y-0 sm:flex-row sm:items-center sm:justify-between">
           <div className="space-y-2">
             <div className="flex items-center gap-2">
               <Link to="/">
-                <Button variant="ghost" size="sm" className="flex items-center gap-2">
+                <Button variant="ghost" size="sm" className="flex items-center gap-2 hover-scale">
                   <ArrowLeft className="h-4 w-4" />
-                  Back to Cards View
+                  <span className="hidden sm:inline">Back to Cards View</span>
+                  <span className="sm:hidden">Back</span>
                 </Button>
               </Link>
             </div>
-            <h1 className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+            <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
               All Tenders - Table View
             </h1>
-            <p className="text-muted-foreground">
+            <p className="text-sm sm:text-base text-muted-foreground">
               Browse all government procurement opportunities in a detailed table format.
             </p>
           </div>
           
-          <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" asChild>
+          <div className="flex items-center gap-2 justify-center sm:justify-end">
+            <Button variant="outline" size="sm" asChild className="animate-fade-in">
               <Link to="/" className="flex items-center gap-2">
                 <Grid3X3 className="h-4 w-4" />
-                Cards View
+                <span className="hidden sm:inline">Cards View</span>
+                <span className="sm:hidden">Cards</span>
               </Link>
             </Button>
-            <Button variant="secondary" size="sm" className="flex items-center gap-2">
+            <Button variant="secondary" size="sm" className="flex items-center gap-2 animate-fade-in">
               <Table className="h-4 w-4" />
-              Table View
+              <span className="hidden sm:inline">Table View</span>
+              <span className="sm:hidden">Table</span>
             </Button>
           </div>
         </div>
@@ -189,17 +192,17 @@ export default function TenderTableView() {
 
         {/* Results Summary */}
         {!isLoading && filteredReleases.length > 0 && (
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Badge variant="secondary">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 animate-fade-in">
+            <div className="flex items-center gap-2 justify-center sm:justify-start">
+              <Badge variant="secondary" className="text-sm">
                 {totalItems} tender{totalItems !== 1 ? 's' : ''} found
               </Badge>
               {data?.releases && filteredReleases.length !== data.releases.length && (
-                <span className="text-sm text-muted-foreground">
+                <span className="text-xs sm:text-sm text-muted-foreground">
                   (filtered from {data.releases.length} total)
                 </span>
               )}
-              <span className="text-sm text-muted-foreground">
+              <span className="text-xs sm:text-sm text-muted-foreground">
                 • Page {currentPage} of {totalPages}
               </span>
             </div>
@@ -213,14 +216,14 @@ export default function TenderTableView() {
             onRetry={() => refetch()}
           />
         ) : filteredReleases.length === 0 && !isLoading ? (
-          <div className="text-center py-12">
+          <div className="text-center py-8 sm:py-12 animate-fade-in">
             <h3 className="text-lg font-semibold mb-2">No tenders found</h3>
-            <p className="text-muted-foreground">
+            <p className="text-muted-foreground mb-4">
               Try adjusting your search criteria or clearing your filters.
             </p>
             <Button
               variant="outline"
-              className="mt-4"
+              className="mt-4 hover-scale"
               onClick={() => {
                 setFilters({
                   searchQuery: '',
