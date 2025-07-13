@@ -23,8 +23,8 @@ export default function Tenders() {
   });
 
   const { data, isLoading, error, refetch } = useQuery({
-    queryKey: ['tenders', filters.province],
-    queryFn: () => TenderApiService.getAllTenders(1, 2000, filters.province),
+    queryKey: ['tenders', 'all-provinces'], // Always fetch all tenders for client-side filtering
+    queryFn: () => TenderApiService.getAllTenders(1, 2000, 'all-provinces'),
     retry: 2,
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
@@ -84,6 +84,31 @@ export default function Tenders() {
         });
         
         if (!categoryMatches) return false;
+      }
+
+      // Province filter (client-side filtering since API doesn't filter properly)
+      if (filters.province !== 'all-provinces' && filters.province !== 'gauteng') {
+        const buyerName = release.buyer?.name?.toLowerCase() || '';
+        const procuringEntityName = tender.procuringEntity?.name?.toLowerCase() || '';
+        
+        // Map province filters to keywords that might appear in organization names
+        const provinceKeywords: { [key: string]: string[] } = {
+          'western-cape': ['western cape', 'cape town', 'stellenbosch', 'george', 'mossel bay'],
+          'eastern-cape': ['eastern cape', 'port elizabeth', 'east london', 'grahamstown'],
+          'kwazulu-natal': ['kwazulu-natal', 'kwazulu natal', 'durban', 'pietermaritzburg', 'richards bay'],
+          'limpopo': ['limpopo', 'polokwane', 'tzaneen', 'musina'],
+          'mpumalanga': ['mpumalanga', 'nelspruit', 'witbank', 'secunda'],
+          'northern-cape': ['northern cape', 'kimberley', 'upington', 'springbok'],
+          'north-west': ['north west', 'north-west', 'potchefstroom', 'klerksdorp', 'rustenburg'],
+          'free-state': ['free state', 'bloemfontein', 'welkom', 'kroonstad']
+        };
+        
+        const keywords = provinceKeywords[filters.province] || [];
+        const hasProvinceKeyword = keywords.some(keyword => 
+          buyerName.includes(keyword) || procuringEntityName.includes(keyword)
+        );
+        
+        if (!hasProvinceKeyword) return false;
       }
 
       return true;
