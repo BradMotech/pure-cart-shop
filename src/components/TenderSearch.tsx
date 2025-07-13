@@ -66,12 +66,12 @@ export function TenderSearch({ filters, onFiltersChange, isLoading }: TenderSear
       </div>
 
       {/* Filters Row */}
-      <div className="flex flex-wrap gap-4 items-center">
+      <div className="flex flex-wrap gap-2 sm:gap-4 items-center">
         {/* Status Filter */}
         <div className="flex items-center gap-2">
-          <span className="text-sm font-medium text-muted-foreground whitespace-nowrap">Status:</span>
+          <span className="text-xs sm:text-sm font-medium text-muted-foreground whitespace-nowrap">Status:</span>
           <Select value={filters.status} onValueChange={handleStatusChange} disabled={isLoading}>
-            <SelectTrigger className="w-[140px]">
+            <SelectTrigger className="w-[120px] sm:w-[140px]">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -88,9 +88,9 @@ export function TenderSearch({ filters, onFiltersChange, isLoading }: TenderSear
 
         {/* Category Filter */}
         <div className="flex items-center gap-2">
-          <span className="text-sm font-medium text-muted-foreground whitespace-nowrap">Category:</span>
+          <span className="text-xs sm:text-sm font-medium text-muted-foreground whitespace-nowrap">Category:</span>
           <Select value={filters.category} onValueChange={handleCategoryChange} disabled={isLoading}>
-            <SelectTrigger className="w-[160px]">
+            <SelectTrigger className="w-[140px] sm:w-[160px]">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -109,9 +109,9 @@ export function TenderSearch({ filters, onFiltersChange, isLoading }: TenderSear
 
         {/* Province Filter */}
         <div className="flex items-center gap-2">
-          <span className="text-sm font-medium text-muted-foreground whitespace-nowrap">Province:</span>
+          <span className="text-xs sm:text-sm font-medium text-muted-foreground whitespace-nowrap">Province:</span>
           <Select value={filters.province} onValueChange={handleProvinceChange} disabled={isLoading}>
-            <SelectTrigger className="w-[160px]">
+            <SelectTrigger className="w-[140px] sm:w-[160px]">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -131,9 +131,9 @@ export function TenderSearch({ filters, onFiltersChange, isLoading }: TenderSear
 
         {/* Sort By */}
         <div className="flex items-center gap-2">
-          <span className="text-sm font-medium text-muted-foreground whitespace-nowrap">Sort by:</span>
+          <span className="text-xs sm:text-sm font-medium text-muted-foreground whitespace-nowrap">Sort by:</span>
           <Select value={filters.sortBy} onValueChange={handleSortChange} disabled={isLoading}>
-            <SelectTrigger className="w-[140px]">
+            <SelectTrigger className="w-[120px] sm:w-[140px]">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>

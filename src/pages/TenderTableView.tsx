@@ -26,7 +26,7 @@ export default function TenderTableView() {
 
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['tenders', filters.province, currentPage],
-    queryFn: () => TenderApiService.getAllTenders(currentPage, pageSize, filters.province),
+    queryFn: () => TenderApiService.getAllTenders(currentPage, 2000, filters.province),
     retry: 2,
     staleTime: 5 * 60 * 1000, // 5 minutes
   });

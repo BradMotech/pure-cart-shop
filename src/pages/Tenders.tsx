@@ -24,7 +24,7 @@ export default function Tenders() {
 
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['tenders', filters.province],
-    queryFn: () => TenderApiService.getAllTenders(1, 50, filters.province),
+    queryFn: () => TenderApiService.getAllTenders(1, 2000, filters.province),
     retry: 2,
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
@@ -129,12 +129,12 @@ export default function Tenders() {
     <div className="container mx-auto px-4 py-6 space-y-6">
       {/* Header */}
       <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="text-center flex-1">
-            <h1 className="text-4xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="text-center sm:text-left flex-1">
+            <h1 className="text-2xl sm:text-4xl font-bold bg-gradient-primary bg-clip-text text-transparent">
               South African Government Tenders
             </h1>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto mt-2">
+            <p className="text-sm sm:text-lg text-muted-foreground max-w-2xl mx-auto sm:mx-0 mt-2">
               Discover procurement opportunities from the South African government. 
               Browse, search, and track tender opportunities across all departments.
             </p>
@@ -143,12 +143,12 @@ export default function Tenders() {
           <div className="flex items-center gap-2">
             <Button variant="secondary" size="sm" className="flex items-center gap-2">
               <Grid3X3 className="h-4 w-4" />
-              Cards View
+              <span className="hidden sm:inline">Cards View</span>
             </Button>
             <Button variant="outline" size="sm" asChild>
               <Link to="/table" className="flex items-center gap-2">
                 <Table className="h-4 w-4" />
-                Table View
+                <span className="hidden sm:inline">Table View</span>
               </Link>
             </Button>
           </div>

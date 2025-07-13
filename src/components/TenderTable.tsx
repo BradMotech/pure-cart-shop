@@ -145,34 +145,34 @@ export function TenderTable({
 
   if (isLoading) {
     return (
-      <div className="space-y-4">
-        <div className="rounded-md border">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-[250px]">Title</TableHead>
-                <TableHead>Tender No.</TableHead>
-                <TableHead>Organ of State</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Category</TableHead>
-                <TableHead>Value</TableHead>
-                <TableHead>Closing Date</TableHead>
-                <TableHead className="w-[100px]">Actions</TableHead>
+    <div className="space-y-4">
+      <div className="rounded-md border overflow-x-auto">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-[200px] sm:w-[250px]">Title</TableHead>
+              <TableHead className="hidden sm:table-cell">Tender No.</TableHead>
+              <TableHead className="hidden md:table-cell">Organ of State</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead className="hidden lg:table-cell">Category</TableHead>
+              <TableHead className="hidden sm:table-cell">Value</TableHead>
+              <TableHead className="hidden md:table-cell">Closing Date</TableHead>
+              <TableHead className="w-[80px] sm:w-[100px]">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {[...Array(pageSize)].map((_, index) => (
+              <TableRow key={index}>
+                <TableCell><div className="h-4 bg-muted animate-pulse rounded" /></TableCell>
+                <TableCell className="hidden sm:table-cell"><div className="h-4 bg-muted animate-pulse rounded w-20" /></TableCell>
+                <TableCell className="hidden md:table-cell"><div className="h-4 bg-muted animate-pulse rounded w-32" /></TableCell>
+                <TableCell><div className="h-4 bg-muted animate-pulse rounded w-16" /></TableCell>
+                <TableCell className="hidden lg:table-cell"><div className="h-4 bg-muted animate-pulse rounded w-20" /></TableCell>
+                <TableCell className="hidden sm:table-cell"><div className="h-4 bg-muted animate-pulse rounded w-24" /></TableCell>
+                <TableCell className="hidden md:table-cell"><div className="h-4 bg-muted animate-pulse rounded w-20" /></TableCell>
+                <TableCell><div className="h-4 bg-muted animate-pulse rounded w-16" /></TableCell>
               </TableRow>
-            </TableHeader>
-            <TableBody>
-              {[...Array(pageSize)].map((_, index) => (
-                <TableRow key={index}>
-                  <TableCell><div className="h-4 bg-muted animate-pulse rounded" /></TableCell>
-                  <TableCell><div className="h-4 bg-muted animate-pulse rounded w-20" /></TableCell>
-                  <TableCell><div className="h-4 bg-muted animate-pulse rounded w-32" /></TableCell>
-                  <TableCell><div className="h-4 bg-muted animate-pulse rounded w-16" /></TableCell>
-                  <TableCell><div className="h-4 bg-muted animate-pulse rounded w-20" /></TableCell>
-                  <TableCell><div className="h-4 bg-muted animate-pulse rounded w-24" /></TableCell>
-                  <TableCell><div className="h-4 bg-muted animate-pulse rounded w-20" /></TableCell>
-                  <TableCell><div className="h-4 bg-muted animate-pulse rounded w-16" /></TableCell>
-                </TableRow>
-              ))}
+            ))}
             </TableBody>
           </Table>
         </div>
@@ -186,14 +186,14 @@ export function TenderTable({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-[250px]">Title</TableHead>
-              <TableHead>Tender No.</TableHead>
-              <TableHead>Organ of State</TableHead>
+              <TableHead className="w-[200px] sm:w-[250px]">Title</TableHead>
+              <TableHead className="hidden sm:table-cell">Tender No.</TableHead>
+              <TableHead className="hidden md:table-cell">Organ of State</TableHead>
               <TableHead>Status</TableHead>
-              <TableHead>Category</TableHead>
-              <TableHead>Value</TableHead>
-              <TableHead>Closing Date</TableHead>
-              <TableHead className="w-[100px]">Actions</TableHead>
+              <TableHead className="hidden lg:table-cell">Category</TableHead>
+              <TableHead className="hidden sm:table-cell">Value</TableHead>
+              <TableHead className="hidden md:table-cell">Closing Date</TableHead>
+              <TableHead className="w-[80px] sm:w-[100px]">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -220,7 +220,7 @@ export function TenderTable({
                         </div>
                       </div>
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="hidden sm:table-cell">
                       <div className="flex items-center gap-1">
                         <Hash className="h-3 w-3 text-muted-foreground" />
                         <span className="text-sm font-mono">
@@ -228,7 +228,7 @@ export function TenderTable({
                         </span>
                       </div>
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="hidden md:table-cell">
                       <div className="flex items-center gap-1">
                         <Building className="h-3 w-3 text-muted-foreground" />
                         <span className="text-sm">
@@ -241,12 +241,12 @@ export function TenderTable({
                         {tender.status || 'Unknown'}
                       </Badge>
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="hidden lg:table-cell">
                       <span className="text-sm">
                         {tender.mainProcurementCategory || 'Not specified'}
                       </span>
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="hidden sm:table-cell">
                       <div className="flex items-center gap-1">
                         <DollarSign className="h-3 w-3 text-muted-foreground" />
                         <span className="text-sm font-medium">
@@ -254,7 +254,7 @@ export function TenderTable({
                         </span>
                       </div>
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="hidden md:table-cell">
                       <div className="flex items-center gap-1">
                         <Calendar className="h-3 w-3 text-muted-foreground" />
                         <span className="text-sm">
@@ -270,7 +270,7 @@ export function TenderTable({
                         className="flex items-center gap-1"
                       >
                         <Eye className="h-3 w-3" />
-                        View
+                        <span className="hidden sm:inline">View</span>
                       </Button>
                     </TableCell>
                   </TableRow>
