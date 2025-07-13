@@ -47,8 +47,7 @@ serve(async (req) => {
     const response = await fetch(targetUrl, {
       method: 'GET',
       headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
+        'accept': 'text/plain',
       },
     });
 

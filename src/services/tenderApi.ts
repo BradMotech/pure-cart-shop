@@ -8,8 +8,14 @@ export class TenderApiService {
   static async getAllTenders(page?: number, pageSize?: number): Promise<ReleasePackage> {
     try {
       const params = new URLSearchParams();
-      if (page) params.append('page', page.toString());
-      if (pageSize) params.append('pageSize', pageSize.toString());
+      if (page) params.append('PageNumber', page.toString());
+      if (pageSize) params.append('PageSize', pageSize.toString());
+      
+      // Add required date parameters (last 3 months as default)
+      const dateTo = new Date().toISOString().split('T')[0];
+      const dateFrom = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+      params.append('dateFrom', dateFrom);
+      params.append('dateTo', dateTo);
       
       const queryParams = new URLSearchParams({
         path: '/api/OCDSReleases',
