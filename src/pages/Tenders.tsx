@@ -23,8 +23,8 @@ export default function Tenders() {
   });
 
   const { data, isLoading, error, refetch } = useQuery({
-    queryKey: ['tenders', 'all-provinces'], // Always fetch all tenders for client-side filtering
-    queryFn: () => TenderApiService.getAllTenders(1, 2000, 'all-provinces'),
+    queryKey: ['tenders', 'all-provinces'], 
+    queryFn: () => TenderApiService.getAllTenders(1, 100, 'all-provinces'), // Reduced from 2000 to 100
     retry: 2,
     staleTime: 5 * 60 * 1000, // 5 minutes
   });

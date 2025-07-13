@@ -42,13 +42,19 @@ export class TenderApiService {
         ...(params.toString() && { params: params.toString() })
       });
 
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+
       const response = await fetch(`https://attqsvaofnoctctqumvc.supabase.co/functions/v1/etenders-proxy?${queryParams}`, {
         method: 'GET',
+        signal: controller.signal,
         headers: {
           'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF0dHFzdmFvZm5vY3RjdHF1bXZjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI0MzE2MzAsImV4cCI6MjA2ODAwNzYzMH0.Ms05gNU-0Ulimuk0V0_o_ksXY58nYrXGbgMOI-bkJn8`,
           'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF0dHFzdmFvZm5vY3RjdHF1bXZjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI0MzE2MzAsImV4cCI6MjA2ODAwNzYzMH0.Ms05gNU-0Ulimuk0V0_o_ksXY58nYrXGbgMOI-bkJn8',
         },
       });
+
+      clearTimeout(timeoutId);
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -60,6 +66,9 @@ export class TenderApiService {
       return data;
     } catch (error) {
       console.error('Error fetching tenders:', error);
+      if (error.name === 'AbortError') {
+        throw new Error('Request timed out. Please try again.');
+      }
       throw error;
     }
   }
@@ -70,13 +79,19 @@ export class TenderApiService {
         path: `/api/OCDSReleases/release/${encodeURIComponent(ocid)}`
       });
 
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000);
+
       const response = await fetch(`https://attqsvaofnoctctqumvc.supabase.co/functions/v1/etenders-proxy?${queryParams}`, {
         method: 'GET',
+        signal: controller.signal,
         headers: {
           'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF0dHFzdmFvZm5vY3RjdHF1bXZjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI0MzE2MzAsImV4cCI6MjA2ODAwNzYzMH0.Ms05gNU-0Ulimuk0V0_o_ksXY58nYrXGbgMOI-bkJn8`,
           'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF0dHFzdmFvZm5vY3RjdHF1bXZjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI0MzE2MzAsImV4cCI6MjA2ODAwNzYzMH0.Ms05gNU-0Ulimuk0V0_o_ksXY58nYrXGbgMOI-bkJn8',
         },
       });
+
+      clearTimeout(timeoutId);
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -88,6 +103,9 @@ export class TenderApiService {
       return data;
     } catch (error) {
       console.error('Error fetching tender by OCID:', error);
+      if (error.name === 'AbortError') {
+        throw new Error('Request timed out. Please try again.');
+      }
       throw error;
     }
   }
