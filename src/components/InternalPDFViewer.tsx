@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
 import { Document, Page, pdfjs } from 'react-pdf';
+import DocViewer, { DocViewerRenderers } from 'react-doc-viewer';
 import { X, Download, ExternalLink, ZoomIn, ZoomOut, Maximize2, Minimize2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -28,8 +29,21 @@ function isViewableInBrowser(url: string, format?: string): boolean {
   const extension = getFileExtension(url);
   const fileFormat = format?.toLowerCase() || extension;
   
-  // Only PDFs can be viewed inline with our current setup
+  // Supported formats: PDF with react-pdf, DOC/DOCX with react-doc-viewer
+  const supportedFormats = ['pdf', 'doc', 'docx'];
+  return supportedFormats.includes(fileFormat) || supportedFormats.includes(extension);
+}
+
+function isPdfDocument(url: string, format?: string): boolean {
+  const extension = getFileExtension(url);
+  const fileFormat = format?.toLowerCase() || extension;
   return fileFormat === 'pdf' || extension === 'pdf';
+}
+
+function isDocDocument(url: string, format?: string): boolean {
+  const extension = getFileExtension(url);
+  const fileFormat = format?.toLowerCase() || extension;
+  return ['doc', 'docx'].includes(fileFormat) || ['doc', 'docx'].includes(extension);
 }
 
 export function InternalPDFViewer({ url, title, onClose, documentType, format }: InternalPDFViewerProps) {
@@ -56,11 +70,14 @@ export function InternalPDFViewer({ url, title, onClose, documentType, format }:
     setLoading(false);
   }, []);
 
-  // For non-PDF files, show fallback immediately
+  // For non-viewable files, show fallback immediately
   useState(() => {
     if (!canViewInline) {
       setLoading(false);
       setPdfError(true);
+    } else if (isDocDocument(url, format)) {
+      // For DOC files, we don't need PDF loading states
+      setLoading(false);
     }
   });
 
@@ -266,10 +283,10 @@ export function InternalPDFViewer({ url, title, onClose, documentType, format }:
 
         <CardContent className="flex-1 p-3 sm:p-6 overflow-auto">
           <div className="w-full h-full flex items-center justify-center">
-            {loading && !pdfError && (
+            {loading && !pdfError && isPdfDocument(url, format) && (
               <div className="text-center">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-                <p className="text-sm text-muted-foreground">Loading PDF...</p>
+                <p className="text-sm text-muted-foreground">Loading document...</p>
               </div>
             )}
 
@@ -307,21 +324,31 @@ export function InternalPDFViewer({ url, title, onClose, documentType, format }:
               </div>
             ) : (
               canViewInline ? (
-                <Document
-                  file={pdfUrl}
-                  onLoadSuccess={onDocumentLoadSuccess}
-                  onLoadError={onDocumentLoadError}
-                  loading=""
-                  className="flex justify-center"
-                >
-                  <Page 
-                    pageNumber={pageNumber} 
-                    scale={zoom}
-                    className="shadow-lg"
-                    renderTextLayer={false}
-                    renderAnnotationLayer={false}
-                  />
-                </Document>
+                isPdfDocument(url, format) ? (
+                  <Document
+                    file={pdfUrl}
+                    onLoadSuccess={onDocumentLoadSuccess}
+                    onLoadError={onDocumentLoadError}
+                    loading=""
+                    className="flex justify-center"
+                  >
+                    <Page 
+                      pageNumber={pageNumber} 
+                      scale={zoom}
+                      className="shadow-lg"
+                      renderTextLayer={false}
+                      renderAnnotationLayer={false}
+                    />
+                  </Document>
+                ) : isDocDocument(url, format) ? (
+                  <div className="w-full h-full">
+                    <DocViewer
+                      documents={[{ uri: url }]}
+                      pluginRenderers={DocViewerRenderers}
+                      style={{ height: '100%' }}
+                    />
+                  </div>
+                ) : null
               ) : null
             )}
           </div>
