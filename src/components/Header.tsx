@@ -1,5 +1,6 @@
-import { Search, FileText, Building, Globe } from 'lucide-react';
+import { Search, FileText, Building, Globe, Table } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Link } from 'react-router-dom';
 
 export function Header() {
   return (
@@ -35,8 +36,11 @@ export function Header() {
 
           {/* CTA */}
           <div className="flex items-center gap-3">
-            <Button variant="gradient" size="sm">
-              View All Tenders
+            <Button variant="gradient" size="sm" asChild>
+              <Link to="/table" className="flex items-center gap-2">
+                <Table className="h-4 w-4" />
+                View All Tenders
+              </Link>
             </Button>
           </div>
         </div>
