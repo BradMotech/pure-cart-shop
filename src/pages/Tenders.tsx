@@ -16,12 +16,13 @@ export default function Tenders() {
     searchQuery: '',
     status: 'all',
     category: 'all',
+    province: 'gauteng',
     sortBy: 'date'
   });
 
   const { data, isLoading, error, refetch } = useQuery({
-    queryKey: ['tenders'],
-    queryFn: () => TenderApiService.getAllTenders(),
+    queryKey: ['tenders', filters.province],
+    queryFn: () => TenderApiService.getAllTenders(1, 50, filters.province),
     retry: 2,
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
@@ -169,6 +170,7 @@ export default function Tenders() {
               searchQuery: '',
               status: 'all',
               category: 'all',
+              province: 'gauteng',
               sortBy: 'date'
             })}
           >

@@ -8,6 +8,7 @@ export interface SearchFilters {
   searchQuery: string;
   status: string;
   category: string;
+  province: string;
   sortBy: string;
 }
 
@@ -30,6 +31,10 @@ export function TenderSearch({ filters, onFiltersChange, isLoading }: TenderSear
     onFiltersChange({ ...filters, category: value });
   };
 
+  const handleProvinceChange = (value: string) => {
+    onFiltersChange({ ...filters, province: value });
+  };
+
   const handleSortChange = (value: string) => {
     onFiltersChange({ ...filters, sortBy: value });
   };
@@ -39,11 +44,12 @@ export function TenderSearch({ filters, onFiltersChange, isLoading }: TenderSear
       searchQuery: '',
       status: 'all',
       category: 'all',
+      province: 'gauteng',
       sortBy: 'date'
     });
   };
 
-  const hasActiveFilters = filters.searchQuery || filters.status !== 'all' || filters.category !== 'all';
+  const hasActiveFilters = filters.searchQuery || filters.status !== 'all' || filters.category !== 'all' || filters.province !== 'gauteng';
 
   return (
     <div className="space-y-4 p-6 bg-card rounded-lg shadow-card border">
@@ -93,6 +99,28 @@ export function TenderSearch({ filters, onFiltersChange, isLoading }: TenderSear
               <SelectItem value="services">Services</SelectItem>
               <SelectItem value="works">Works</SelectItem>
               <SelectItem value="consultingServices">Consulting Services</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Province Filter */}
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-medium text-muted-foreground whitespace-nowrap">Province:</span>
+          <Select value={filters.province} onValueChange={handleProvinceChange} disabled={isLoading}>
+            <SelectTrigger className="w-[160px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="gauteng">Gauteng</SelectItem>
+              <SelectItem value="western-cape">Western Cape</SelectItem>
+              <SelectItem value="eastern-cape">Eastern Cape</SelectItem>
+              <SelectItem value="kwazulu-natal">KwaZulu-Natal</SelectItem>
+              <SelectItem value="limpopo">Limpopo</SelectItem>
+              <SelectItem value="mpumalanga">Mpumalanga</SelectItem>
+              <SelectItem value="northern-cape">Northern Cape</SelectItem>
+              <SelectItem value="north-west">North West</SelectItem>
+              <SelectItem value="free-state">Free State</SelectItem>
+              <SelectItem value="all-provinces">All Provinces</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -157,6 +185,15 @@ export function TenderSearch({ filters, onFiltersChange, isLoading }: TenderSear
               <X 
                 className="h-3 w-3 cursor-pointer hover:text-destructive" 
                 onClick={() => handleCategoryChange('all')}
+              />
+            </Badge>
+          )}
+          {filters.province !== 'gauteng' && (
+            <Badge variant="outline" className="flex items-center gap-1">
+              Province: {filters.province.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+              <X 
+                className="h-3 w-3 cursor-pointer hover:text-destructive" 
+                onClick={() => handleProvinceChange('gauteng')}
               />
             </Badge>
           )}

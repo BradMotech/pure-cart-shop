@@ -5,7 +5,7 @@ const BASE_URL = 'https://ocds-api.etenders.gov.za';
 
 export class TenderApiService {
   
-  static async getAllTenders(page?: number, pageSize?: number): Promise<ReleasePackage> {
+  static async getAllTenders(page?: number, pageSize?: number, province?: string): Promise<ReleasePackage> {
     try {
       const params = new URLSearchParams();
       if (page) params.append('PageNumber', page.toString());
@@ -16,6 +16,26 @@ export class TenderApiService {
       const dateFrom = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
       params.append('dateFrom', dateFrom);
       params.append('dateTo', dateTo);
+      
+      // Add province filter if provided and not 'all-provinces'
+      if (province && province !== 'all-provinces') {
+        // Map province names to the format expected by the API
+        const provinceMap: Record<string, string> = {
+          'gauteng': 'Gauteng',
+          'western-cape': 'Western Cape',
+          'eastern-cape': 'Eastern Cape',
+          'kwazulu-natal': 'KwaZulu-Natal',
+          'limpopo': 'Limpopo',
+          'mpumalanga': 'Mpumalanga',
+          'northern-cape': 'Northern Cape',
+          'north-west': 'North West',
+          'free-state': 'Free State'
+        };
+        const mappedProvince = provinceMap[province];
+        if (mappedProvince) {
+          params.append('province', mappedProvince);
+        }
+      }
       
       const queryParams = new URLSearchParams({
         path: '/api/OCDSReleases',
