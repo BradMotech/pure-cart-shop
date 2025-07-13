@@ -7,13 +7,14 @@ import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { ErrorMessage } from '@/components/ErrorMessage';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Table, Grid3X3 } from 'lucide-react';
+import { Table, Grid3X3, Shuffle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { TenderApiService } from '@/services/tenderApi';
 import { Release } from '@/types/tender';
 
 export default function Tenders() {
   const [selectedTender, setSelectedTender] = useState<Release | null>(null);
+  const [visibleCount, setVisibleCount] = useState(12); // Start with 12 cards on mobile
   const [filters, setFilters] = useState<SearchFilters>({
     searchQuery: '',
     status: 'all',
@@ -168,6 +169,40 @@ export default function Tenders() {
     return filtered;
   }, [data?.releases, filters]);
 
+  // Shuffle function using Fisher-Yates algorithm
+  const shuffleArray = (array: Release[]) => {
+    const shuffled = [...array];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
+  };
+
+  // Get visible releases for display
+  const visibleReleases = useMemo(() => {
+    return filteredReleases.slice(0, visibleCount);
+  }, [filteredReleases, visibleCount]);
+
+  // Check if we're on mobile (simple screen width check)
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+
+  const handleLoadMore = () => {
+    if (isMobile) {
+      // On mobile, shuffle the array and load 12 more
+      const shuffled = shuffleArray(filteredReleases);
+      setVisibleCount(prev => Math.min(prev + 12, shuffled.length));
+    } else {
+      // On desktop, just load more without shuffling
+      setVisibleCount(prev => Math.min(prev + 12, filteredReleases.length));
+    }
+  };
+
+  // Reset visible count when filters change
+  useEffect(() => {
+    setVisibleCount(12);
+  }, [filters]);
+
   const handleViewDetails = (release: Release) => {
     setSelectedTender(release);
   };
@@ -228,18 +263,24 @@ export default function Tenders() {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 animate-fade-in">
           <div className="flex items-center gap-2 justify-center sm:justify-start">
             <Badge variant="secondary" className="text-sm">
-              {filteredReleases.length} tender{filteredReleases.length !== 1 ? 's' : ''}
+              Showing {visibleReleases.length} of {filteredReleases.length} tender{filteredReleases.length !== 1 ? 's' : ''}
             </Badge>
             {data?.releases && filteredReleases.length !== data.releases.length && (
               <span className="text-xs sm:text-sm text-muted-foreground">
-                of {data.releases.length} total
+                (filtered from {data.releases.length} total)
               </span>
             )}
           </div>
           
-          {data?.links?.next && (
-            <Button variant="outline" size="sm" className="hover-scale">
-              Load More
+          {visibleCount < filteredReleases.length && (
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={handleLoadMore}
+              className="hover-scale flex items-center gap-2"
+            >
+              {isMobile && <Shuffle className="h-4 w-4" />}
+              {isMobile ? 'Shuffle & Load More' : 'Load More'}
             </Button>
           )}
         </div>
@@ -274,7 +315,7 @@ export default function Tenders() {
           </Button>
         </div>
       ) : (
-        <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 animate-fade-in">{filteredReleases.map((release, index) => (
+        <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 animate-fade-in">{visibleReleases.map((release, index) => (
             <TenderCard
               key={release.ocid || index}
               release={release}

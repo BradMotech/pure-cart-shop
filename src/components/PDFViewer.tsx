@@ -64,9 +64,9 @@ export function PDFViewer({ url, title, onClose, documentType, format }: PDFView
       return originalUrl;
     }
     
-    // For external PDFs, we'll try to use a PDF proxy service
-    // First try the original URL, if that fails we'll show error with alternatives
-    return originalUrl;
+    // Use our Supabase edge function as PDF proxy
+    const proxyBaseUrl = 'https://attqsvaofnoctctqumvc.supabase.co/functions/v1/pdf-proxy';
+    return `${proxyBaseUrl}?url=${encodeURIComponent(originalUrl)}`;
   };
 
   const proxyUrl = getProxyUrl(url);

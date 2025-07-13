@@ -169,7 +169,7 @@ export function TenderTable({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-[200px] sm:w-[250px]">Title</TableHead>
+              <TableHead className="w-[200px] sm:w-[300px]">Title & Description</TableHead>
               <TableHead className="hidden sm:table-cell">Tender No.</TableHead>
               <TableHead className="hidden md:table-cell">Organ of State</TableHead>
               <TableHead>Status</TableHead>
@@ -182,7 +182,12 @@ export function TenderTable({
           <TableBody>
             {[...Array(pageSize)].map((_, index) => (
               <TableRow key={index}>
-                <TableCell><div className="h-4 bg-muted animate-pulse rounded" /></TableCell>
+                <TableCell>
+                  <div className="space-y-2">
+                    <div className="h-4 bg-muted animate-pulse rounded" />
+                    <div className="h-3 bg-muted animate-pulse rounded w-3/4" />
+                  </div>
+                </TableCell>
                 <TableCell className="hidden sm:table-cell"><div className="h-4 bg-muted animate-pulse rounded w-20" /></TableCell>
                 <TableCell className="hidden md:table-cell"><div className="h-4 bg-muted animate-pulse rounded w-32" /></TableCell>
                 <TableCell><div className="h-4 bg-muted animate-pulse rounded w-16" /></TableCell>
@@ -204,16 +209,16 @@ export function TenderTable({
       <div className="rounded-md border">
         <Table>
           <TableHeader>
-            <TableRow>
-              <TableHead className="w-[200px] sm:w-[250px]">Title</TableHead>
-              <TableHead className="hidden sm:table-cell">Tender No.</TableHead>
-              <TableHead className="hidden md:table-cell">Organ of State</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="hidden lg:table-cell">Category</TableHead>
-              <TableHead className="hidden sm:table-cell">Value</TableHead>
-              <TableHead className="hidden md:table-cell">Closing Date</TableHead>
-              <TableHead className="w-[80px] sm:w-[100px]">Actions</TableHead>
-            </TableRow>
+              <TableRow>
+                <TableHead className="w-[200px] sm:w-[300px]">Title & Description</TableHead>
+                <TableHead className="hidden sm:table-cell">Tender No.</TableHead>
+                <TableHead className="hidden md:table-cell">Organ of State</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead className="hidden lg:table-cell">Category</TableHead>
+                <TableHead className="hidden sm:table-cell">Value</TableHead>
+                <TableHead className="hidden md:table-cell">Closing Date</TableHead>
+                <TableHead className="w-[80px] sm:w-[100px]">Actions</TableHead>
+              </TableRow>
           </TableHeader>
           <TableBody>
             {releases.length === 0 ? (
@@ -230,10 +235,15 @@ export function TenderTable({
                 return (
                   <TableRow key={release.ocid || index} className="hover:bg-muted/50">
                     <TableCell className="font-medium">
-                      <div className="space-y-1">
+                      <div className="space-y-2">
                         <div className="font-semibold text-sm">
                           {tender.title || 'Untitled Tender'}
                         </div>
+                        {tender.description && (
+                          <div className="text-xs text-muted-foreground line-clamp-2 max-w-xs">
+                            {tender.description}
+                          </div>
+                        )}
                         <div className="text-xs text-muted-foreground">
                           OCID: {release.ocid || 'N/A'}
                         </div>
