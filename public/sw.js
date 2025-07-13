@@ -1,11 +1,11 @@
 const CACHE_NAME = 'e-tender-v1';
 const urlsToCache = [
   '/',
-  '/static/js/bundle.js',
-  '/static/css/main.css',
   '/icon-192x192.png',
   '/icon-512x512.png',
-  '/splash-screen.png'
+  '/splash-screen.png',
+  '/favicon.png',
+  '/manifest.json'
 ];
 
 // Install event
