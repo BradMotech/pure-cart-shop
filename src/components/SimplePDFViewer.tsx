@@ -163,8 +163,9 @@ export function SimplePDFViewer({ url, title, onClose, documentType, format }: S
 
         <CardContent className="flex-1 p-3 sm:p-6 overflow-hidden">
           <div className="w-full h-full bg-muted rounded-lg overflow-hidden">
-            <iframe
-              src={`https://attqsvaofnoctctqumvc.supabase.co/functions/v1/pdf-proxy?url=${encodeURIComponent(url)}`}
+            <object
+              data={`https://attqsvaofnoctctqumvc.supabase.co/functions/v1/pdf-proxy?url=${encodeURIComponent(url)}`}
+              type="application/pdf"
               className="w-full h-full border-0 rounded-lg"
               style={{ 
                 transform: `scale(${zoom / 100})`,
@@ -173,14 +174,32 @@ export function SimplePDFViewer({ url, title, onClose, documentType, format }: S
                 height: `${10000 / zoom}%`
               }}
               title={title || 'PDF Document'}
-              onError={() => {
-                toast({
-                  title: "PDF Loading Error",
-                  description: "Could not load the PDF. Try opening it in a new tab.",
-                  variant: "destructive",
-                });
-              }}
-            />
+            >
+              <div className="w-full h-full flex items-center justify-center p-6">
+                <div className="text-center space-y-4 max-w-md">
+                  <div className="text-4xl sm:text-6xl">📄</div>
+                  <div>
+                    <h3 className="font-medium mb-2 text-sm sm:text-base">PDF Document</h3>
+                    <p className="text-xs sm:text-sm text-muted-foreground mb-4">
+                      {title || 'Government tender document'}
+                    </p>
+                    <div className="flex flex-col sm:flex-row gap-2 justify-center">
+                      <Button variant="default" size="sm" onClick={handleOpenInNewTab}>
+                        <ExternalLink className="h-3 w-3 mr-1" />
+                        View PDF
+                      </Button>
+                      <Button variant="outline" size="sm" onClick={handleDownload}>
+                        <Download className="h-3 w-3 mr-1" />
+                        Download
+                      </Button>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-3">
+                      Your browser doesn't support inline PDF viewing. Use the buttons above to view or download.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </object>
           </div>
         </CardContent>
       </Card>
