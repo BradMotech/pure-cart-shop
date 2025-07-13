@@ -99,6 +99,10 @@ export function TenderSearch({ filters, onFiltersChange, isLoading }: TenderSear
               <SelectItem value="services">Services</SelectItem>
               <SelectItem value="works">Works</SelectItem>
               <SelectItem value="consultingServices">Consulting Services</SelectItem>
+              <SelectItem value="programming">Programming</SelectItem>
+              <SelectItem value="informationServiceActivities">Information Service Activities</SelectItem>
+              <SelectItem value="informationAndCommunication">Information and Communication</SelectItem>
+              <SelectItem value="computerProgrammingConsultancy">Computer Programming, Consultancy and Related Activities</SelectItem>
             </SelectContent>
           </Select>
         </div>
