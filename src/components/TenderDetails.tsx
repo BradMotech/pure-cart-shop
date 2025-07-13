@@ -267,8 +267,8 @@ export function TenderDetails({ release, onBack }: TenderDetailsProps) {
               {tender.documents.map((doc, index) => (
                 <Card key={doc.id || index}>
                   <CardContent className="p-4">
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="flex items-start gap-3 flex-1 min-w-0">
+                    <div className="space-y-3">
+                      <div className="flex items-start gap-3">
                         <FileText className="h-5 w-5 text-primary mt-0.5 shrink-0" />
                         <div className="flex-1 min-w-0">
                           <h4 className="font-medium text-sm mb-1">{doc.title || 'Untitled Document'}</h4>
@@ -283,11 +283,12 @@ export function TenderDetails({ release, onBack }: TenderDetailsProps) {
                         </div>
                       </div>
                       {doc.url && (
-                        <div className="flex gap-2">
+                        <div className="flex flex-col sm:flex-row gap-2 w-full">
                           <Button
                             size="sm"
                             variant="default"
                             onClick={() => handleViewDocument(doc)}
+                            className="flex-1 sm:flex-none"
                           >
                             <Eye className="h-3 w-3 mr-1" />
                             View in App
@@ -296,6 +297,7 @@ export function TenderDetails({ release, onBack }: TenderDetailsProps) {
                             size="sm"
                             variant="outline"
                             asChild
+                            className="flex-1 sm:flex-none"
                           >
                             <a href={doc.url} target="_blank" rel="noopener noreferrer">
                               <ExternalLink className="h-3 w-3 mr-1" />
