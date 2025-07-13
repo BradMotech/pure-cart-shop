@@ -203,6 +203,13 @@ export default function Tenders() {
     setVisibleCount(12);
   }, [filters]);
 
+  // Reset scroll position when viewing tender details
+  useEffect(() => {
+    if (selectedTender) {
+      window.scrollTo(0, 0);
+    }
+  }, [selectedTender]);
+
   const handleViewDetails = (release: Release) => {
     setSelectedTender(release);
   };
