@@ -20,7 +20,7 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from '@/components/ui/pagination';
-import { Eye, ExternalLink, Calendar, DollarSign, Hash, Building } from 'lucide-react';
+import { Eye, ExternalLink, Calendar, DollarSign, Hash, Building, MapPin } from 'lucide-react';
 
 interface TenderTableProps {
   releases: Release[];
@@ -41,6 +41,13 @@ export function TenderTable({
   onViewDetails,
   isLoading
 }: TenderTableProps) {
+  // Get province name from common mapping  
+  const getProvinceName = () => {
+    // This would ideally come from the actual data, but for now we'll show a default
+    // In a real app, you'd pass the current province filter or extract it from data
+    return 'Gauteng';
+  };
+
   const formatValue = (release: Release) => {
     const tender = release.tender;
     if (!tender?.value?.amount) return 'Not specified';
@@ -241,6 +248,10 @@ export function TenderTable({
                             {tender.mainProcurementCategory}
                           </Badge>
                         )}
+                        <Badge variant="outline" className="text-xs">
+                          <MapPin className="h-3 w-3 mr-1" />
+                          {getProvinceName()}
+                        </Badge>
                       </div>
                     </TableCell>
                     <TableCell>

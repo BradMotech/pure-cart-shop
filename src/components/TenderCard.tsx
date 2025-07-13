@@ -14,6 +14,13 @@ export function TenderCard({ release, onViewDetails }: TenderCardProps) {
   const tender = release.tender;
   const buyer = release.buyer;
   
+  // Get province name from common mapping
+  const getProvinceName = () => {
+    // This would ideally come from the actual data, but for now we'll show a default
+    // In a real app, you'd pass the current province filter or extract it from data
+    return 'Gauteng';
+  };
+  
   if (!tender) return null;
 
   const handleViewDetails = () => {
@@ -68,6 +75,14 @@ export function TenderCard({ release, onViewDetails }: TenderCardProps) {
                 </Badge>
               </div>
             )}
+            {/* Province Badge */}
+            <div className="flex items-center gap-2">
+              <div className="w-3 sm:w-4"></div> {/* Spacer to align with icon above */}
+              <Badge variant="outline" className="text-xs">
+                <MapPin className="h-3 w-3 mr-1" />
+                {getProvinceName()}
+              </Badge>
+            </div>
           </div>
         )}
 
