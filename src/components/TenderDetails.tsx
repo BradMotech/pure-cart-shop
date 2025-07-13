@@ -7,7 +7,7 @@ import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Release } from '@/types/tender';
 import { TenderApiService } from '@/services/tenderApi';
-import { PDFViewer } from '@/components/PDFViewer';
+import { SimplePDFViewer } from '@/components/SimplePDFViewer';
 
 interface TenderDetailsProps {
   release: Release;
@@ -442,7 +442,7 @@ export function TenderDetails({ release, onBack }: TenderDetailsProps) {
 
       {/* PDF Viewer Modal */}
       {viewingDocument && (
-        <PDFViewer
+        <SimplePDFViewer
           url={viewingDocument.url}
           title={viewingDocument.title}
           documentType={viewingDocument.documentType}

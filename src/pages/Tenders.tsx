@@ -25,7 +25,7 @@ export default function Tenders() {
 
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['tenders', 'all-provinces'], 
-    queryFn: () => TenderApiService.getAllTenders(1, 100, 'all-provinces'),
+    queryFn: () => TenderApiService.getAllTenders(1, 1000, 'all-provinces'),
     retry: 1, // Reduced retries for mobile
     staleTime: 10 * 60 * 1000, // 10 minutes - longer stale time for mobile
     gcTime: 15 * 60 * 1000, // 15 minutes garbage collection time (was cacheTime)
