@@ -1,4 +1,5 @@
 import { ReleasePackage } from '@/types/tender';
+import { supabase } from '@/integrations/supabase/client';
 
 const BASE_URL = 'https://ocds-api.etenders.gov.za';
 
@@ -6,29 +7,23 @@ export class TenderApiService {
   
   static async getAllTenders(page?: number, pageSize?: number): Promise<ReleasePackage> {
     try {
-      let url = `${BASE_URL}/api/OCDSReleases`;
-      
       const params = new URLSearchParams();
       if (page) params.append('page', page.toString());
       if (pageSize) params.append('pageSize', pageSize.toString());
       
-      if (params.toString()) {
-        url += `?${params.toString()}`;
-      }
+      const requestBody = {
+        path: '/api/OCDSReleases',
+        ...(params.toString() && { params: params.toString() })
+      };
 
-      const response = await fetch(url, {
-        method: 'GET',
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json',
-        },
+      const { data, error } = await supabase.functions.invoke('etenders-proxy', {
+        body: requestBody,
       });
 
-      if (!response.ok) {
-        throw new Error(`Failed to fetch tenders: ${response.status} ${response.statusText}`);
+      if (error) {
+        throw new Error(`Failed to fetch tenders: ${error.message}`);
       }
 
-      const data: ReleasePackage = await response.json();
       return data;
     } catch (error) {
       console.error('Error fetching tenders:', error);
@@ -38,21 +33,18 @@ export class TenderApiService {
 
   static async getTenderByOcid(ocid: string): Promise<ReleasePackage> {
     try {
-      const url = `${BASE_URL}/api/OCDSReleases/release/${encodeURIComponent(ocid)}`;
-      
-      const response = await fetch(url, {
-        method: 'GET',
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json',
-        },
+      const requestBody = {
+        path: `/api/OCDSReleases/release/${encodeURIComponent(ocid)}`
+      };
+
+      const { data, error } = await supabase.functions.invoke('etenders-proxy', {
+        body: requestBody,
       });
 
-      if (!response.ok) {
-        throw new Error(`Failed to fetch tender: ${response.status} ${response.statusText}`);
+      if (error) {
+        throw new Error(`Failed to fetch tender: ${error.message}`);
       }
 
-      const data: ReleasePackage = await response.json();
       return data;
     } catch (error) {
       console.error('Error fetching tender by OCID:', error);
