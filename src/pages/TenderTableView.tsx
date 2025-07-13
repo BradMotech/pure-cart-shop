@@ -60,15 +60,29 @@ export default function TenderTableView() {
         if (status !== filters.status.toLowerCase()) return false;
       }
 
-      // Category filter
+      // Category filter (enhanced with description search)
       if (filters.category !== 'all') {
         const category = tender.mainProcurementCategory?.toLowerCase() || '';
         const additionalCategories = tender.additionalProcurementCategories?.map(cat => cat.toLowerCase()) || [];
+        const description = tender.description?.toLowerCase() || '';
+        const title = tender.title?.toLowerCase() || '';
         
         // Check both main and additional categories
         const allCategories = [category, ...additionalCategories].filter(Boolean);
         
-        // Simple exact matching for category filters
+        // Define category keywords to search for in description and title
+        const categoryKeywords: { [key: string]: string[] } = {
+          'goods': ['goods', 'supplies', 'equipment', 'materials', 'products', 'items', 'procurement of goods'],
+          'services': ['services', 'professional services', 'maintenance', 'support', 'cleaning', 'security', 'consulting'],
+          'works': ['works', 'construction', 'building', 'infrastructure', 'renovation', 'repair', 'civil works'],
+          'consultingServices': ['consulting', 'consultancy', 'advisory', 'professional advice', 'expert services', 'specialist services'],
+          'programming': ['programming', 'software development', 'coding', 'application development', 'system development'],
+          'informationServiceActivities': ['information service', 'data services', 'information management', 'database', 'information systems'],
+          'informationAndCommunication': ['information and communication', 'ICT', 'telecommunications', 'communication systems', 'IT services'],
+          'computerProgrammingConsultancy': ['computer programming', 'IT consultancy', 'software consultancy', 'technical consulting', 'IT services', 'computer services']
+        };
+        
+        // Check formal categories first
         const categoryMatches = allCategories.some(cat => {
           if (filters.category === 'consultingServices') {
             return cat.includes('consulting') || cat.includes('consultancy');
@@ -85,7 +99,16 @@ export default function TenderTableView() {
           return cat === filters.category.toLowerCase();
         });
         
-        if (!categoryMatches) return false;
+        // If no formal category match, search in description and title
+        let descriptionMatches = false;
+        if (!categoryMatches) {
+          const keywords = categoryKeywords[filters.category] || [filters.category.toLowerCase()];
+          descriptionMatches = keywords.some(keyword => 
+            description.includes(keyword) || title.includes(keyword)
+          );
+        }
+        
+        if (!categoryMatches && !descriptionMatches) return false;
       }
 
       // Province filter (client-side filtering since API doesn't filter properly)
