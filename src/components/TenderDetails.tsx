@@ -285,22 +285,20 @@ export function TenderDetails({ release, onBack }: TenderDetailsProps) {
                       {doc.url && (
                         <div className="flex flex-col sm:flex-row gap-2 w-full">
                           <Button
-                            size="sm"
                             variant="default"
                             onClick={() => handleViewDocument(doc)}
                             className="flex-1 sm:flex-none"
                           >
-                            <Eye className="h-3 w-3 mr-1" />
+                            <Eye className="h-4 w-4 mr-2" />
                             View in App
                           </Button>
                           <Button
-                            size="sm"
                             variant="outline"
                             asChild
                             className="flex-1 sm:flex-none"
                           >
                             <a href={doc.url} target="_blank" rel="noopener noreferrer">
-                              <ExternalLink className="h-3 w-3 mr-1" />
+                              <ExternalLink className="h-4 w-4 mr-2" />
                               Open in Tab
                             </a>
                           </Button>
