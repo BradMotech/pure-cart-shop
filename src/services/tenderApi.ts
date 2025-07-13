@@ -11,18 +11,25 @@ export class TenderApiService {
       if (page) params.append('page', page.toString());
       if (pageSize) params.append('pageSize', pageSize.toString());
       
-      const requestBody = {
+      const queryParams = new URLSearchParams({
         path: '/api/OCDSReleases',
         ...(params.toString() && { params: params.toString() })
-      };
-
-      const { data, error } = await supabase.functions.invoke('etenders-proxy', {
-        body: requestBody,
       });
 
-      if (error) {
-        throw new Error(`Failed to fetch tenders: ${error.message}`);
+      const response = await fetch(`https://attqsvaofnoctctqumvc.supabase.co/functions/v1/etenders-proxy?${queryParams}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF0dHFzdmFvZm5vY3RjdHF1bXZjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI0MzE2MzAsImV4cCI6MjA2ODAwNzYzMH0.Ms05gNU-0Ulimuk0V0_o_ksXY58nYrXGbgMOI-bkJn8`,
+          'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF0dHFzdmFvZm5vY3RjdHF1bXZjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI0MzE2MzAsImV4cCI6MjA2ODAwNzYzMH0.Ms05gNU-0Ulimuk0V0_o_ksXY58nYrXGbgMOI-bkJn8',
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(`Failed to fetch tenders: ${errorData.error || response.statusText}`);
       }
+
+      const data = await response.json();
 
       return data;
     } catch (error) {
@@ -33,17 +40,24 @@ export class TenderApiService {
 
   static async getTenderByOcid(ocid: string): Promise<ReleasePackage> {
     try {
-      const requestBody = {
+      const queryParams = new URLSearchParams({
         path: `/api/OCDSReleases/release/${encodeURIComponent(ocid)}`
-      };
-
-      const { data, error } = await supabase.functions.invoke('etenders-proxy', {
-        body: requestBody,
       });
 
-      if (error) {
-        throw new Error(`Failed to fetch tender: ${error.message}`);
+      const response = await fetch(`https://attqsvaofnoctctqumvc.supabase.co/functions/v1/etenders-proxy?${queryParams}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF0dHFzdmFvZm5vY3RjdHF1bXZjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI0MzE2MzAsImV4cCI6MjA2ODAwNzYzMH0.Ms05gNU-0Ulimuk0V0_o_ksXY58nYrXGbgMOI-bkJn8`,
+          'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF0dHFzdmFvZm5vY3RjdHF1bXZjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI0MzE2MzAsImV4cCI6MjA2ODAwNzYzMH0.Ms05gNU-0Ulimuk0V0_o_ksXY58nYrXGbgMOI-bkJn8',
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(`Failed to fetch tender: ${errorData.error || response.statusText}`);
       }
+
+      const data = await response.json();
 
       return data;
     } catch (error) {

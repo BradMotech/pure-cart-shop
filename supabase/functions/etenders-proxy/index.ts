@@ -14,8 +14,19 @@ serve(async (req) => {
   }
 
   try {
-    const body = await req.json();
-    const { path, params } = body;
+    let path, params;
+
+    if (req.method === 'GET') {
+      // Handle GET requests with query parameters
+      const url = new URL(req.url);
+      path = url.searchParams.get('path');
+      params = url.searchParams.get('params');
+    } else {
+      // Handle POST requests with JSON body
+      const body = await req.json();
+      path = body.path;
+      params = body.params;
+    }
     
     if (!path) {
       return new Response(JSON.stringify({ error: 'Path parameter is required' }), {
