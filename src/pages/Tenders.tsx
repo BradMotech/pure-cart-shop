@@ -24,9 +24,13 @@ export default function Tenders() {
 
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['tenders', 'all-provinces'], 
-    queryFn: () => TenderApiService.getAllTenders(1, 100, 'all-provinces'), // Reduced from 2000 to 100
-    retry: 2,
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    queryFn: () => TenderApiService.getAllTenders(1, 100, 'all-provinces'),
+    retry: 1, // Reduced retries for mobile
+    staleTime: 10 * 60 * 1000, // 10 minutes - longer stale time for mobile
+    gcTime: 15 * 60 * 1000, // 15 minutes garbage collection time (was cacheTime)
+    refetchOnWindowFocus: false, // Disable refetch on focus for PWA
+    refetchOnReconnect: false, // Disable refetch on reconnect
+    refetchOnMount: false, // Only fetch once on mount
   });
 
   // Filter and sort releases
