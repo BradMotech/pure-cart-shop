@@ -17,6 +17,21 @@ interface InternalPDFViewerProps {
   format?: string;
 }
 
+function getFileExtension(url: string): string {
+  const urlObj = new URL(url);
+  const path = urlObj.pathname || urlObj.searchParams.get('downloadedFileName') || '';
+  const extension = path.split('.').pop()?.toLowerCase() || '';
+  return extension;
+}
+
+function isViewableInBrowser(url: string, format?: string): boolean {
+  const extension = getFileExtension(url);
+  const fileFormat = format?.toLowerCase() || extension;
+  
+  // Only PDFs can be viewed inline with our current setup
+  return fileFormat === 'pdf' || extension === 'pdf';
+}
+
 export function InternalPDFViewer({ url, title, onClose, documentType, format }: InternalPDFViewerProps) {
   const [numPages, setNumPages] = useState<number>(0);
   const [pageNumber, setPageNumber] = useState<number>(1);
@@ -26,6 +41,10 @@ export function InternalPDFViewer({ url, title, onClose, documentType, format }:
   const [pdfError, setPdfError] = useState(false);
   const { toast } = useToast();
 
+  // Check if this document can be viewed inline
+  const canViewInline = isViewableInBrowser(url, format);
+  const fileExtension = getFileExtension(url);
+  
   // Try direct URL first, fallback to proxy if CORS issues
   const [useProxy, setUseProxy] = useState(false);
   const pdfUrl = useProxy 
@@ -36,6 +55,14 @@ export function InternalPDFViewer({ url, title, onClose, documentType, format }:
     setNumPages(numPages);
     setLoading(false);
   }, []);
+
+  // For non-PDF files, show fallback immediately
+  useState(() => {
+    if (!canViewInline) {
+      setLoading(false);
+      setPdfError(true);
+    }
+  });
 
   const onDocumentLoadError = useCallback((error: Error) => {
     console.error('PDF loading error:', error);
@@ -248,16 +275,22 @@ export function InternalPDFViewer({ url, title, onClose, documentType, format }:
 
             {pdfError ? (
               <div className="text-center space-y-4 max-w-md p-6">
-                <div className="text-4xl sm:text-6xl">📄</div>
+                <div className="text-4xl sm:text-6xl">
+                  {fileExtension === 'doc' || fileExtension === 'docx' ? '📄' : 
+                   fileExtension === 'xls' || fileExtension === 'xlsx' ? '📊' : 
+                   fileExtension === 'ppt' || fileExtension === 'pptx' ? '📽️' : '📄'}
+                </div>
                 <div>
-                  <h3 className="font-medium mb-2 text-sm sm:text-base">PDF Document</h3>
+                  <h3 className="font-medium mb-2 text-sm sm:text-base">
+                    {fileExtension.toUpperCase()} Document
+                  </h3>
                   <p className="text-xs sm:text-sm text-muted-foreground mb-4">
                     {title || 'Government tender document'}
                   </p>
                   <div className="flex flex-col sm:flex-row gap-2 justify-center">
                     <Button variant="default" size="sm" onClick={handleOpenInNewTab}>
                       <ExternalLink className="h-3 w-3 mr-1" />
-                      View PDF
+                      Open Document
                     </Button>
                     <Button variant="outline" size="sm" onClick={handleDownload}>
                       <Download className="h-3 w-3 mr-1" />
@@ -265,26 +298,31 @@ export function InternalPDFViewer({ url, title, onClose, documentType, format }:
                     </Button>
                   </div>
                   <p className="text-xs text-muted-foreground mt-3">
-                    Unable to display PDF inline. Use the buttons above to view or download.
+                    {canViewInline 
+                      ? "Unable to display PDF inline. Use the buttons above to view or download."
+                      : `This ${fileExtension.toUpperCase()} document cannot be displayed inline. Download it to view with the appropriate application.`
+                    }
                   </p>
                 </div>
               </div>
             ) : (
-              <Document
-                file={pdfUrl}
-                onLoadSuccess={onDocumentLoadSuccess}
-                onLoadError={onDocumentLoadError}
-                loading=""
-                className="flex justify-center"
-              >
-                <Page 
-                  pageNumber={pageNumber} 
-                  scale={zoom}
-                  className="shadow-lg"
-                  renderTextLayer={false}
-                  renderAnnotationLayer={false}
-                />
-              </Document>
+              canViewInline ? (
+                <Document
+                  file={pdfUrl}
+                  onLoadSuccess={onDocumentLoadSuccess}
+                  onLoadError={onDocumentLoadError}
+                  loading=""
+                  className="flex justify-center"
+                >
+                  <Page 
+                    pageNumber={pageNumber} 
+                    scale={zoom}
+                    className="shadow-lg"
+                    renderTextLayer={false}
+                    renderAnnotationLayer={false}
+                  />
+                </Document>
+              ) : null
             )}
           </div>
         </CardContent>
