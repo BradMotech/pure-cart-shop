@@ -15,7 +15,7 @@ import { Link } from 'react-router-dom';
 export default function TenderTableView() {
   const [selectedTender, setSelectedTender] = useState<Release | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize] = useState(20);
+  const [pageSize] = useState(10);
   const [filters, setFilters] = useState<SearchFilters>({
     searchQuery: '',
     status: 'all',
@@ -56,29 +56,36 @@ export default function TenderTableView() {
       // Status filter
       if (filters.status !== 'all') {
         const status = tender.status?.toLowerCase() || '';
-        if (!status.includes(filters.status.toLowerCase())) return false;
+        // Handle exact status matching
+        if (status !== filters.status.toLowerCase()) return false;
       }
 
       // Category filter
       if (filters.category !== 'all') {
         const category = tender.mainProcurementCategory?.toLowerCase() || '';
-        const categorySearchTerms = {
-          'programming': ['programming'],
-          'informationServiceActivities': ['information service activities', 'information service'],
-          'informationAndCommunication': ['information and communication', 'information communication'],
-          'computerProgrammingConsultancy': ['computer programming', 'consultancy and related activities', 'computer consultancy'],
-          'goods': ['goods'],
-          'services': ['services'],
-          'works': ['works'],
-          'consultingServices': ['consulting services', 'consulting']
-        };
+        const additionalCategories = tender.additionalProcurementCategories?.map(cat => cat.toLowerCase()) || [];
         
-        const searchTerms = categorySearchTerms[filters.category as keyof typeof categorySearchTerms];
-        if (searchTerms && !searchTerms.some(term => category.includes(term.toLowerCase()))) {
-          return false;
-        } else if (!searchTerms && !category.includes(filters.category.toLowerCase())) {
-          return false;
-        }
+        // Check both main and additional categories
+        const allCategories = [category, ...additionalCategories].filter(Boolean);
+        
+        // Simple exact matching for category filters
+        const categoryMatches = allCategories.some(cat => {
+          if (filters.category === 'consultingServices') {
+            return cat.includes('consulting') || cat.includes('consultancy');
+          }
+          if (filters.category === 'computerProgrammingConsultancy') {
+            return cat.includes('computer') || cat.includes('programming') || cat.includes('consultancy');
+          }
+          if (filters.category === 'informationServiceActivities') {
+            return cat.includes('information') && cat.includes('service');
+          }
+          if (filters.category === 'informationAndCommunication') {
+            return cat.includes('information') && cat.includes('communication');
+          }
+          return cat === filters.category.toLowerCase();
+        });
+        
+        if (!categoryMatches) return false;
       }
 
       return true;
