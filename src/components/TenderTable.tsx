@@ -20,7 +20,7 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from '@/components/ui/pagination';
-import { Eye, ExternalLink, Calendar, DollarSign } from 'lucide-react';
+import { Eye, ExternalLink, Calendar, DollarSign, Hash, Building } from 'lucide-react';
 
 interface TenderTableProps {
   releases: Release[];
@@ -150,12 +150,13 @@ export function TenderTable({
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-[300px]">Title</TableHead>
+                <TableHead className="w-[250px]">Title</TableHead>
+                <TableHead>Tender No.</TableHead>
+                <TableHead>Organ of State</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Category</TableHead>
                 <TableHead>Value</TableHead>
                 <TableHead>Closing Date</TableHead>
-                <TableHead>Buyer</TableHead>
                 <TableHead className="w-[100px]">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -163,11 +164,12 @@ export function TenderTable({
               {[...Array(pageSize)].map((_, index) => (
                 <TableRow key={index}>
                   <TableCell><div className="h-4 bg-muted animate-pulse rounded" /></TableCell>
+                  <TableCell><div className="h-4 bg-muted animate-pulse rounded w-20" /></TableCell>
+                  <TableCell><div className="h-4 bg-muted animate-pulse rounded w-32" /></TableCell>
                   <TableCell><div className="h-4 bg-muted animate-pulse rounded w-16" /></TableCell>
                   <TableCell><div className="h-4 bg-muted animate-pulse rounded w-20" /></TableCell>
                   <TableCell><div className="h-4 bg-muted animate-pulse rounded w-24" /></TableCell>
                   <TableCell><div className="h-4 bg-muted animate-pulse rounded w-20" /></TableCell>
-                  <TableCell><div className="h-4 bg-muted animate-pulse rounded w-32" /></TableCell>
                   <TableCell><div className="h-4 bg-muted animate-pulse rounded w-16" /></TableCell>
                 </TableRow>
               ))}
@@ -184,19 +186,20 @@ export function TenderTable({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-[300px]">Title</TableHead>
+              <TableHead className="w-[250px]">Title</TableHead>
+              <TableHead>Tender No.</TableHead>
+              <TableHead>Organ of State</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Category</TableHead>
               <TableHead>Value</TableHead>
               <TableHead>Closing Date</TableHead>
-              <TableHead>Buyer</TableHead>
               <TableHead className="w-[100px]">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {releases.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="h-24 text-center">
+                <TableCell colSpan={8} className="h-24 text-center">
                   No tenders found.
                 </TableCell>
               </TableRow>
@@ -215,6 +218,22 @@ export function TenderTable({
                         <div className="text-xs text-muted-foreground">
                           OCID: {release.ocid || 'N/A'}
                         </div>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-1">
+                        <Hash className="h-3 w-3 text-muted-foreground" />
+                        <span className="text-sm font-mono">
+                          {tender.id || 'N/A'}
+                        </span>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-1">
+                        <Building className="h-3 w-3 text-muted-foreground" />
+                        <span className="text-sm">
+                          {release.buyer?.name || tender.procuringEntity?.name || 'Not specified'}
+                        </span>
                       </div>
                     </TableCell>
                     <TableCell>
@@ -242,11 +261,6 @@ export function TenderTable({
                           {formatDate(tender.tenderPeriod?.endDate)}
                         </span>
                       </div>
-                    </TableCell>
-                    <TableCell>
-                      <span className="text-sm">
-                        {release.buyer?.name || tender.procuringEntity?.name || 'Not specified'}
-                      </span>
                     </TableCell>
                     <TableCell>
                       <Button

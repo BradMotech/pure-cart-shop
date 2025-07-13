@@ -1,4 +1,4 @@
-import { Calendar, Building2, MapPin, FileText, Clock, DollarSign } from 'lucide-react';
+import { Calendar, Building2, MapPin, FileText, Clock, DollarSign, Hash, Building } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -49,19 +49,27 @@ export function TenderCard({ release, onViewDetails }: TenderCardProps) {
       </CardHeader>
 
       <CardContent className="space-y-4">
-        {/* Buyer Information */}
+        {/* Tender Number */}
+        {tender.id && (
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <Hash className="h-4 w-4 text-primary" />
+            <span className="font-medium">Tender No: {tender.id}</span>
+          </div>
+        )}
+
+        {/* Organ of State (Buyer) */}
         {buyer?.name && (
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Building2 className="h-4 w-4 text-primary" />
-            <span className="font-medium">{buyer.name}</span>
+            <Building className="h-4 w-4 text-primary" />
+            <span className="font-medium">Organ of State: {buyer.name}</span>
           </div>
         )}
 
         {/* Procuring Entity */}
         {tender.procuringEntity?.name && tender.procuringEntity.name !== buyer?.name && (
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <MapPin className="h-4 w-4 text-primary" />
-            <span>Procuring: {tender.procuringEntity.name}</span>
+            <Building2 className="h-4 w-4 text-primary" />
+            <span>Procuring Entity: {tender.procuringEntity.name}</span>
           </div>
         )}
 
