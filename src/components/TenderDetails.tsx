@@ -1,4 +1,5 @@
-import { ArrowLeft, Calendar, Building2, MapPin, FileText, DollarSign, Clock, Globe, Phone, Mail, Download, ExternalLink } from 'lucide-react';
+import { useState } from 'react';
+import { ArrowLeft, Calendar, Building2, MapPin, FileText, DollarSign, Clock, Globe, Phone, Mail, Download, ExternalLink, Eye } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -6,6 +7,7 @@ import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Release } from '@/types/tender';
 import { TenderApiService } from '@/services/tenderApi';
+import { PDFViewer } from '@/components/PDFViewer';
 
 interface TenderDetailsProps {
   release: Release;
@@ -13,11 +15,31 @@ interface TenderDetailsProps {
 }
 
 export function TenderDetails({ release, onBack }: TenderDetailsProps) {
+  const [viewingDocument, setViewingDocument] = useState<{
+    url: string;
+    title: string;
+    documentType?: string;
+    format?: string;
+  } | null>(null);
+  
   const tender = release.tender;
   const buyer = release.buyer;
   const awards = release.awards;
   
   if (!tender) return null;
+
+  const handleViewDocument = (doc: any) => {
+    setViewingDocument({
+      url: doc.url,
+      title: doc.title || 'Untitled Document',
+      documentType: doc.documentType || undefined,
+      format: doc.format || undefined,
+    });
+  };
+
+  const handleCloseViewer = () => {
+    setViewingDocument(null);
+  };
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -261,16 +283,26 @@ export function TenderDetails({ release, onBack }: TenderDetailsProps) {
                         </div>
                       </div>
                       {doc.url && (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          asChild
-                        >
-                          <a href={doc.url} target="_blank" rel="noopener noreferrer">
-                            <ExternalLink className="h-3 w-3 mr-1" />
-                            View
-                          </a>
-                        </Button>
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            variant="default"
+                            onClick={() => handleViewDocument(doc)}
+                          >
+                            <Eye className="h-3 w-3 mr-1" />
+                            View in App
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            asChild
+                          >
+                            <a href={doc.url} target="_blank" rel="noopener noreferrer">
+                              <ExternalLink className="h-3 w-3 mr-1" />
+                              Open in Tab
+                            </a>
+                          </Button>
+                        </div>
                       )}
                     </div>
                   </CardContent>
@@ -407,6 +439,17 @@ export function TenderDetails({ release, onBack }: TenderDetailsProps) {
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* PDF Viewer Modal */}
+      {viewingDocument && (
+        <PDFViewer
+          url={viewingDocument.url}
+          title={viewingDocument.title}
+          documentType={viewingDocument.documentType}
+          format={viewingDocument.format}
+          onClose={handleCloseViewer}
+        />
+      )}
     </div>
   );
 }
