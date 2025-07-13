@@ -229,11 +229,18 @@ export function TenderTable({
                       </div>
                     </TableCell>
                     <TableCell className="hidden md:table-cell">
-                      <div className="flex items-center gap-1">
-                        <Building className="h-3 w-3 text-muted-foreground" />
-                        <span className="text-sm">
-                          {release.buyer?.name || tender.procuringEntity?.name || 'Not specified'}
-                        </span>
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-1">
+                          <Building className="h-3 w-3 text-muted-foreground" />
+                          <span className="text-sm">
+                            {release.buyer?.name || tender.procuringEntity?.name || 'Not specified'}
+                          </span>
+                        </div>
+                        {tender.mainProcurementCategory && (
+                          <Badge className="bg-success text-white hover:bg-success/90 text-xs">
+                            {tender.mainProcurementCategory}
+                          </Badge>
+                        )}
                       </div>
                     </TableCell>
                     <TableCell>

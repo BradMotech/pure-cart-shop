@@ -32,14 +32,6 @@ export function TenderCard({ release, onViewDetails }: TenderCardProps) {
               <Badge variant={TenderApiService.getStatusBadgeVariant(tender.status)} className="text-xs">
                 {tender.status || 'Unknown'}
               </Badge>
-              {tender.mainProcurementCategory && (
-                <Badge variant="outline" className="text-xs">
-                  {tender.mainProcurementCategory.length > 15 
-                    ? tender.mainProcurementCategory.substring(0, 15) + '...' 
-                    : tender.mainProcurementCategory
-                  }
-                </Badge>
-              )}
             </div>
           </div>
         </div>
@@ -62,9 +54,20 @@ export function TenderCard({ release, onViewDetails }: TenderCardProps) {
 
         {/* Organ of State (Buyer) */}
         {buyer?.name && (
-          <div className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground">
-            <Building className="h-3 w-3 sm:h-4 sm:w-4 text-primary shrink-0" />
-            <span className="font-medium truncate">Organ of State: {buyer.name}</span>
+          <div className="space-y-2">
+            <div className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground">
+              <Building className="h-3 w-3 sm:h-4 sm:w-4 text-primary shrink-0" />
+              <span className="font-medium truncate">Organ of State: {buyer.name}</span>
+            </div>
+            {/* Category Badge */}
+            {tender.mainProcurementCategory && (
+              <div className="flex items-center gap-2">
+                <div className="w-3 sm:w-4"></div> {/* Spacer to align with icon above */}
+                <Badge className="bg-success text-white hover:bg-success/90 text-xs">
+                  {tender.mainProcurementCategory}
+                </Badge>
+              </div>
+            )}
           </div>
         )}
 
