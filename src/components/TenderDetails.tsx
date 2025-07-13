@@ -44,7 +44,7 @@ export function TenderDetails({ release, onBack }: TenderDetailsProps) {
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Header */}
-      <div className="flex items-start gap-4">
+      <div className="space-y-4">
         <Button
           variant="ghost"
           size="sm"
@@ -55,7 +55,7 @@ export function TenderDetails({ release, onBack }: TenderDetailsProps) {
           Back to Tenders
         </Button>
         
-        <div className="flex-1 min-w-0">
+        <div className="w-full">
           <h1 className="text-2xl font-bold text-foreground mb-2">
             {tender.title || 'Untitled Tender'}
           </h1>
