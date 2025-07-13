@@ -23,10 +23,14 @@ export function InternalPDFViewer({ url, title, onClose, documentType, format }:
   const [zoom, setZoom] = useState(1.0);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [pdfError, setPdfError] = useState(false);
   const { toast } = useToast();
 
-  // Use the proxy URL to avoid CORS issues
-  const proxyUrl = `https://attqsvaofnoctctqumvc.supabase.co/functions/v1/pdf-proxy?url=${encodeURIComponent(url)}`;
+  // Try direct URL first, fallback to proxy if CORS issues
+  const [useProxy, setUseProxy] = useState(false);
+  const pdfUrl = useProxy 
+    ? `https://attqsvaofnoctctqumvc.supabase.co/functions/v1/pdf-proxy?url=${encodeURIComponent(url)}` 
+    : url;
 
   const onDocumentLoadSuccess = useCallback(({ numPages }: { numPages: number }) => {
     setNumPages(numPages);
@@ -35,13 +39,25 @@ export function InternalPDFViewer({ url, title, onClose, documentType, format }:
 
   const onDocumentLoadError = useCallback((error: Error) => {
     console.error('PDF loading error:', error);
+    
+    // If not using proxy yet, try with proxy
+    if (!useProxy) {
+      console.log('Trying with proxy...');
+      setUseProxy(true);
+      setLoading(true);
+      setPdfError(false);
+      return;
+    }
+    
+    // If proxy also failed, show error
     setLoading(false);
+    setPdfError(true);
     toast({
       title: "PDF Loading Error",
-      description: "Could not load the PDF document. Please try again.",
+      description: "Could not load the PDF document. Showing fallback options.",
       variant: "destructive",
     });
-  }, [toast]);
+  }, [useProxy, toast]);
 
   const handleZoomIn = () => {
     setZoom(prev => Math.min(prev + 0.25, 3.0));
@@ -54,7 +70,7 @@ export function InternalPDFViewer({ url, title, onClose, documentType, format }:
   const handleDownload = () => {
     try {
       const link = document.createElement('a');
-      link.href = proxyUrl;
+      link.href = useProxy ? pdfUrl : url;
       link.download = title || 'document.pdf';
       link.target = '_blank';
       document.body.appendChild(link);
@@ -223,28 +239,53 @@ export function InternalPDFViewer({ url, title, onClose, documentType, format }:
 
         <CardContent className="flex-1 p-3 sm:p-6 overflow-auto">
           <div className="w-full h-full flex items-center justify-center">
-            {loading && (
+            {loading && !pdfError && (
               <div className="text-center">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
                 <p className="text-sm text-muted-foreground">Loading PDF...</p>
               </div>
             )}
-            
-            <Document
-              file={proxyUrl}
-              onLoadSuccess={onDocumentLoadSuccess}
-              onLoadError={onDocumentLoadError}
-              loading=""
-              className="flex justify-center"
-            >
-              <Page 
-                pageNumber={pageNumber} 
-                scale={zoom}
-                className="shadow-lg"
-                renderTextLayer={false}
-                renderAnnotationLayer={false}
-              />
-            </Document>
+
+            {pdfError ? (
+              <div className="text-center space-y-4 max-w-md p-6">
+                <div className="text-4xl sm:text-6xl">📄</div>
+                <div>
+                  <h3 className="font-medium mb-2 text-sm sm:text-base">PDF Document</h3>
+                  <p className="text-xs sm:text-sm text-muted-foreground mb-4">
+                    {title || 'Government tender document'}
+                  </p>
+                  <div className="flex flex-col sm:flex-row gap-2 justify-center">
+                    <Button variant="default" size="sm" onClick={handleOpenInNewTab}>
+                      <ExternalLink className="h-3 w-3 mr-1" />
+                      View PDF
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={handleDownload}>
+                      <Download className="h-3 w-3 mr-1" />
+                      Download
+                    </Button>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-3">
+                    Unable to display PDF inline. Use the buttons above to view or download.
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <Document
+                file={pdfUrl}
+                onLoadSuccess={onDocumentLoadSuccess}
+                onLoadError={onDocumentLoadError}
+                loading=""
+                className="flex justify-center"
+              >
+                <Page 
+                  pageNumber={pageNumber} 
+                  scale={zoom}
+                  className="shadow-lg"
+                  renderTextLayer={false}
+                  renderAnnotationLayer={false}
+                />
+              </Document>
+            )}
           </div>
         </CardContent>
       </Card>
