@@ -3,6 +3,7 @@ import { Release } from '@/types/tender';
 import { TenderApiService } from '@/services/tenderApi';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import {
   Table,
   TableBody,
@@ -220,7 +221,8 @@ export function TenderTable({
   }
 
   return (
-    <div className="space-y-6">
+    <TooltipProvider>
+      <div className="space-y-6">
       <div className="relative overflow-hidden rounded-2xl bg-gradient-subtle border-0 shadow-card hover:shadow-lg transition-all duration-300">
         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-primary" />
         <Table>
@@ -258,13 +260,27 @@ export function TenderTable({
                   <TableRow key={release.ocid || index} className="group hover:bg-primary/2 transition-all duration-300">
                     <TableCell className="font-medium">
                       <div className="space-y-3">
-                        <div className="font-bold text-foreground text-base group-hover:text-primary transition-colors duration-300">
-                          {tender.title || 'Untitled Tender'}
-                        </div>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <div className="font-bold text-foreground text-base group-hover:text-primary transition-colors duration-300 line-clamp-2 cursor-default">
+                              {tender.title || 'Untitled Tender'}
+                            </div>
+                          </TooltipTrigger>
+                          <TooltipContent side="top" className="max-w-sm">
+                            <p className="whitespace-normal">{tender.title || 'Untitled Tender'}</p>
+                          </TooltipContent>
+                        </Tooltip>
                         {tender.description && (
-                          <div className="text-sm text-muted-foreground line-clamp-2 max-w-xs leading-relaxed">
-                            {tender.description}
-                          </div>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <div className="text-sm text-muted-foreground line-clamp-2 max-w-xs leading-relaxed cursor-default">
+                                {tender.description}
+                              </div>
+                            </TooltipTrigger>
+                            <TooltipContent side="top" className="max-w-sm">
+                              <p className="whitespace-normal">{tender.description}</p>
+                            </TooltipContent>
+                          </Tooltip>
                         )}
                         <div className="text-xs text-muted-foreground font-mono bg-muted/30 px-2 py-1 rounded-md w-fit">
                           OCID: {release.ocid || 'N/A'}
@@ -272,14 +288,21 @@ export function TenderTable({
                       </div>
                     </TableCell>
                     <TableCell className="hidden sm:table-cell">
-                      <div className="flex items-center gap-2 p-2 bg-muted/20 rounded-lg">
-                        <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center">
-                          <Hash className="h-3 w-3 text-primary" />
-                        </div>
-                        <span className="text-sm font-mono font-medium">
-                          {tender.id || 'N/A'}
-                        </span>
-                      </div>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div className="flex items-center gap-2 p-2 bg-muted/20 rounded-lg cursor-default">
+                            <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center">
+                              <Hash className="h-3 w-3 text-primary" />
+                            </div>
+                            <span className="text-sm font-mono font-medium truncate">
+                              {tender.id || 'N/A'}
+                            </span>
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent side="top">
+                          <p>Tender ID: {tender.id || 'N/A'}</p>
+                        </TooltipContent>
+                      </Tooltip>
                     </TableCell>
                     <TableCell className="hidden md:table-cell">
                       <div className="space-y-3">
@@ -287,15 +310,29 @@ export function TenderTable({
                           <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center">
                             <Building className="h-3 w-3 text-primary" />
                           </div>
-                          <span className="text-sm font-medium text-foreground truncate max-w-[200px]">
-                            {release.buyer?.name || tender.procuringEntity?.name || 'Not specified'}
-                          </span>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <span className="text-sm font-medium text-foreground truncate max-w-[200px] cursor-default">
+                                {release.buyer?.name || tender.procuringEntity?.name || 'Not specified'}
+                              </span>
+                            </TooltipTrigger>
+                            <TooltipContent side="top" className="max-w-sm">
+                              <p className="whitespace-normal">{release.buyer?.name || tender.procuringEntity?.name || 'Not specified'}</p>
+                            </TooltipContent>
+                          </Tooltip>
                         </div>
                         <div className="flex flex-wrap gap-2">
                           {tender.mainProcurementCategory && (
-                            <Badge className="bg-success/10 text-success border-success/20 hover:bg-success/20 text-xs font-medium px-3 py-1 rounded-full">
-                              {tender.mainProcurementCategory}
-                            </Badge>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Badge className="bg-success/10 text-success border-success/20 hover:bg-success/20 text-xs font-medium px-3 py-1 rounded-full cursor-default truncate max-w-[150px]">
+                                  {tender.mainProcurementCategory}
+                                </Badge>
+                              </TooltipTrigger>
+                              <TooltipContent side="top">
+                                <p>Category: {tender.mainProcurementCategory}</p>
+                              </TooltipContent>
+                            </Tooltip>
                           )}
                           <Badge variant="outline" className="text-xs font-medium px-3 py-1 rounded-full border-primary/20 text-primary">
                             <MapPin className="h-3 w-3 mr-1" />
@@ -313,29 +350,50 @@ export function TenderTable({
                       </Badge>
                     </TableCell>
                     <TableCell className="hidden lg:table-cell">
-                      <span className="text-sm font-medium text-foreground">
-                        {tender.mainProcurementCategory || 'Not specified'}
-                      </span>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span className="text-sm font-medium text-foreground cursor-default truncate max-w-[120px] block">
+                            {tender.mainProcurementCategory || 'Not specified'}
+                          </span>
+                        </TooltipTrigger>
+                        <TooltipContent side="top">
+                          <p>Category: {tender.mainProcurementCategory || 'Not specified'}</p>
+                        </TooltipContent>
+                      </Tooltip>
                     </TableCell>
                     <TableCell className="hidden sm:table-cell">
-                      <div className="flex items-center gap-2 p-2 bg-success/5 rounded-lg border border-success/20">
-                        <div className="w-6 h-6 rounded-full bg-success/10 flex items-center justify-center">
-                          <DollarSign className="h-3 w-3 text-success" />
-                        </div>
-                        <span className="text-sm font-bold text-success">
-                          {formatValue(release)}
-                        </span>
-                      </div>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div className="flex items-center gap-2 p-2 bg-success/5 rounded-lg border border-success/20 cursor-default">
+                            <div className="w-6 h-6 rounded-full bg-success/10 flex items-center justify-center">
+                              <DollarSign className="h-3 w-3 text-success" />
+                            </div>
+                            <span className="text-sm font-bold text-success truncate max-w-[100px]">
+                              {formatValue(release)}
+                            </span>
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent side="top">
+                          <p>Contract Value: {formatValue(release)}</p>
+                        </TooltipContent>
+                      </Tooltip>
                     </TableCell>
                     <TableCell className="hidden md:table-cell">
-                      <div className="flex items-center gap-2 p-2 bg-warning/5 rounded-lg border border-warning/20">
-                        <div className="w-6 h-6 rounded-full bg-warning/10 flex items-center justify-center">
-                          <Calendar className="h-3 w-3 text-warning" />
-                        </div>
-                        <span className="text-sm font-medium text-foreground">
-                          {formatDate(tender.tenderPeriod?.endDate)}
-                        </span>
-                      </div>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div className="flex items-center gap-2 p-2 bg-warning/5 rounded-lg border border-warning/20 cursor-default">
+                            <div className="w-6 h-6 rounded-full bg-warning/10 flex items-center justify-center">
+                              <Calendar className="h-3 w-3 text-warning" />
+                            </div>
+                            <span className="text-sm font-medium text-foreground truncate max-w-[100px]">
+                              {formatDate(tender.tenderPeriod?.endDate)}
+                            </span>
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent side="top">
+                          <p>Closing Date: {formatDate(tender.tenderPeriod?.endDate)}</p>
+                        </TooltipContent>
+                      </Tooltip>
                     </TableCell>
                     <TableCell>
                       <Button
@@ -363,5 +421,6 @@ export function TenderTable({
         </div>
       )}
     </div>
+    </TooltipProvider>
   );
 }
