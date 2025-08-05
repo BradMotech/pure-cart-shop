@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { CartProvider } from '@/contexts/CartContext';
 import Header from '@/components/Header';
 import ProductCard from '@/components/ProductCard';
 import ProductFilters from '@/components/ProductFilters';
@@ -31,35 +30,33 @@ const Index = () => {
     });
 
   return (
-    <CartProvider>
-      <div className="min-h-screen bg-shop-background">
-        <Header />
-        
-        <main className="container mx-auto px-4 py-8">
-          <ProductFilters
-            categories={categories}
-            selectedCategory={selectedCategory}
-            onCategoryChange={setSelectedCategory}
-            sortBy={sortBy}
-            onSortChange={setSortBy}
-          />
+    <div className="min-h-screen bg-shop-background">
+      <Header />
+      
+      <main className="container mx-auto px-4 py-8">
+        <ProductFilters
+          categories={categories}
+          selectedCategory={selectedCategory}
+          onCategoryChange={setSelectedCategory}
+          sortBy={sortBy}
+          onSortChange={setSortBy}
+        />
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-            {filteredProducts.map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+          {filteredProducts.map((product) => (
+            <ProductCard key={product.id} product={product} />
+          ))}
+        </div>
+
+        {filteredProducts.length === 0 && (
+          <div className="text-center py-12">
+            <p className="text-shop-text-light">No products found in this category.</p>
           </div>
+        )}
+      </main>
 
-          {filteredProducts.length === 0 && (
-            <div className="text-center py-12">
-              <p className="text-shop-text-light">No products found in this category.</p>
-            </div>
-          )}
-        </main>
-
-        <CartSidebar />
-      </div>
-    </CartProvider>
+      <CartSidebar />
+    </div>
   );
 };
 
