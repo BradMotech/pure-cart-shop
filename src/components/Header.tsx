@@ -1,10 +1,15 @@
-import { Search, User, Heart, ShoppingBag, Menu } from 'lucide-react';
+import { Search, User, Heart, ShoppingBag, Menu, LogOut } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useCart } from '@/contexts/CartContext';
+import { useAuth } from '@/contexts/AuthContext';
+import { useWishlist } from '@/contexts/WishlistContext';
 import { Button } from '@/components/ui/button';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
 const Header = () => {
   const { totalItems, toggleCart } = useCart();
+  const { user, isAdmin, signOut } = useAuth();
+  const { wishlistCount } = useWishlist();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -47,14 +52,40 @@ const Header = () => {
               <Search className="h-5 w-5" />
             </Button>
             
-            <Button variant="ghost" size="sm">
-              <User className="h-5 w-5" />
-              <span className="hidden sm:ml-2 sm:inline">Account</span>
-            </Button>
+            {user ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="sm">
+                    <User className="h-5 w-5" />
+                    <span className="hidden sm:ml-2 sm:inline">Account</span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => navigate('/account')}>
+                    My Account
+                  </DropdownMenuItem>
+                  {isAdmin && (
+                    <DropdownMenuItem onClick={() => navigate('/admin')}>
+                      Admin Dashboard
+                    </DropdownMenuItem>
+                  )}
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={signOut}>
+                    <LogOut className="w-4 h-4 mr-2" />
+                    Sign Out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <Button variant="ghost" size="sm" onClick={() => navigate('/auth')}>
+                <User className="h-5 w-5" />
+                <span className="hidden sm:ml-2 sm:inline">Account</span>
+              </Button>
+            )}
             
-            <Button variant="ghost" size="sm">
+            <Button variant="ghost" size="sm" onClick={() => navigate('/wishlist')}>
               <Heart className="h-5 w-5" />
-              <span className="hidden sm:ml-2 sm:inline">Wishlist (3)</span>
+              <span className="hidden sm:ml-2 sm:inline">Wishlist ({wishlistCount})</span>
             </Button>
             
             <Button 
