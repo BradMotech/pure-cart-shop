@@ -39,11 +39,11 @@ const CartSidebar = () => {
                   return (
                     <div key={itemId} className="flex space-x-4">
                       <div className="h-20 w-16 flex-shrink-0 overflow-hidden rounded bg-shop-surface">
-                        <img
-                          src={item.product.image}
-                          alt={item.product.name}
-                          className="h-full w-full object-cover"
-                        />
+        <img
+          src={item.product.image_url || '/placeholder.svg'}
+          alt={item.product.name}
+          className="h-full w-full object-cover"
+        />
                       </div>
 
                       <div className="flex flex-1 flex-col">
@@ -57,7 +57,7 @@ const CartSidebar = () => {
                                 {item.selectedColor}
                               </p>
                             )}
-                            <p className="text-sm text-shop-text">£{item.product.price}</p>
+                            <p className="text-sm text-shop-text">R{item.product.price}</p>
                           </div>
                           
                           <Button
@@ -100,7 +100,7 @@ const CartSidebar = () => {
               <div className="border-t border-shop-border pt-6 space-y-4">
                 <div className="flex justify-between text-lg font-medium">
                   <span>Total</span>
-                  <span>£{totalPrice.toFixed(2)}</span>
+                  <span>R{totalPrice.toFixed(2)}</span>
                 </div>
                 
                 <div className="space-y-2">

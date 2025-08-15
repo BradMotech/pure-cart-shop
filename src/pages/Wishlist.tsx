@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCart } from '@/contexts/CartContext';
+import { Product } from '@/types/product';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -19,6 +20,9 @@ interface WishlistItem {
     colors: string[];
     in_stock: boolean;
     is_on_sale: boolean;
+    category: string;
+    gender: string;
+    description: string | null;
   };
 }
 
@@ -51,7 +55,10 @@ export default function Wishlist() {
           image_url,
           colors,
           in_stock,
-          is_on_sale
+          is_on_sale,
+          category,
+          gender,
+          description
         )
       `)
       .eq('user_id', user.id);
@@ -91,18 +98,18 @@ export default function Wishlist() {
   };
 
   const addToCart = (item: WishlistItem) => {
-    const product = {
+    const product: Product = {
       id: item.product.id,
       name: item.product.name,
       price: item.product.price,
-      originalPrice: item.product.original_price,
-      image: item.product.image_url || '',
-      rating: 5,
-      reviewCount: 0,
-      category: '',
+      original_price: item.product.original_price,
+      image_url: item.product.image_url,
+      category: item.product.category,
+      gender: item.product.gender,
       colors: item.product.colors,
-      inStock: item.product.in_stock,
-      isOnSale: item.product.is_on_sale
+      in_stock: item.product.in_stock,
+      is_on_sale: item.product.is_on_sale,
+      description: item.product.description
     };
     
     addItem(product);

@@ -4,7 +4,7 @@ import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import Header from '@/components/Header';
-import PayfastButton from '@/components/PayfastButton';
+import { PayfastButton } from '@/components/PayfastButton';
 
 const Cart = () => {
   const navigate = useNavigate();
@@ -73,11 +73,11 @@ const Cart = () => {
                   <div key={itemId} className="bg-shop-surface p-6 rounded-sm border border-shop-border">
                     <div className="flex space-x-6">
                       <div className="h-24 w-20 flex-shrink-0 overflow-hidden rounded bg-shop-background">
-                        <img
-                          src={item.product.image}
-                          alt={item.product.name}
-                          className="h-full w-full object-cover"
-                        />
+          <img
+            src={item.product.image_url || '/placeholder.svg'}
+            alt={item.product.name}
+            className="h-full w-full object-cover"
+          />
                       </div>
 
                       <div className="flex flex-1 flex-col">
@@ -180,10 +180,7 @@ const Cart = () => {
                 </div>
 
                 <PayfastButton 
-                  amount={totalPrice * 1.15}
-                  itemName="Cart Checkout"
-                  itemDescription={`${state.items.length} items`}
-                  className="w-full"
+                  totalAmount={totalPrice * 1.15}
                 />
               </div>
             </div>
