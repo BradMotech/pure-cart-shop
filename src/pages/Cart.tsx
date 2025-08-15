@@ -1,11 +1,14 @@
 import { ArrowLeft, Minus, Plus, Trash2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '@/contexts/CartContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import Header from '@/components/Header';
+import PayfastButton from '@/components/PayfastButton';
 
 const Cart = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const { 
     state, 
     removeItem, 
@@ -13,6 +16,18 @@ const Cart = () => {
     clearCart, 
     totalPrice 
   } = useCart();
+
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-shop-background">
+        <Header />
+        <main className="container mx-auto px-4 py-8 text-center">
+          <h1 className="text-2xl font-bold mb-4">Please sign in to view your cart</h1>
+          <Button onClick={() => navigate('/auth')}>Sign In</Button>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-shop-background">
@@ -77,7 +92,7 @@ const Cart = () => {
                               </p>
                             )}
                             <p className="text-lg font-medium text-shop-text mt-2">
-                              £{item.product.price}
+                              R{item.product.price}
                             </p>
                           </div>
                           
@@ -115,7 +130,7 @@ const Cart = () => {
                           </div>
 
                           <div className="text-lg font-medium">
-                            £{(item.product.price * item.quantity).toFixed(2)}
+                            R{(item.product.price * item.quantity).toFixed(2)}
                           </div>
                         </div>
                       </div>
@@ -145,28 +160,31 @@ const Cart = () => {
                 <div className="space-y-3 border-b border-shop-border pb-4">
                   <div className="flex justify-between">
                     <span className="text-shop-text-light">Subtotal</span>
-                    <span className="text-shop-text">£{totalPrice.toFixed(2)}</span>
+                    <span className="text-shop-text">R{totalPrice.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-shop-text-light">Shipping</span>
                     <span className="text-shop-text">Free</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-shop-text-light">Tax</span>
-                    <span className="text-shop-text">Calculated at checkout</span>
+                    <span className="text-shop-text-light">VAT (15%)</span>
+                    <span className="text-shop-text">R{(totalPrice * 0.15).toFixed(2)}</span>
                   </div>
                 </div>
 
                 <div className="pt-4 mb-6">
                   <div className="flex justify-between text-lg font-semibold">
                     <span>Total</span>
-                    <span>£{totalPrice.toFixed(2)}</span>
+                    <span>R{(totalPrice * 1.15).toFixed(2)}</span>
                   </div>
                 </div>
 
-                <Button className="w-full" variant="shop">
-                  Proceed to Checkout
-                </Button>
+                <PayfastButton 
+                  amount={totalPrice * 1.15}
+                  itemName="Cart Checkout"
+                  itemDescription={`${state.items.length} items`}
+                  className="w-full"
+                />
               </div>
             </div>
           </div>

@@ -1,19 +1,48 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Header from '@/components/Header';
 import ProductCard from '@/components/ProductCard';
 import ProductFilters from '@/components/ProductFilters';
 import CartSidebar from '@/components/CartSidebar';
-import { products, categories } from '@/data/products';
+import { supabase } from '@/integrations/supabase/client';
 
 const Index = () => {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [sortBy, setSortBy] = useState('name');
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const categories = [
+    { id: 'all', name: 'All Products', count: products.length },
+    { id: 'tops', name: 'Tops', count: products.filter(p => p.category === 'Tops').length },
+    { id: 'headwear', name: 'Headwear', count: products.filter(p => p.category === 'Headwear').length },
+    { id: 'bottoms', name: 'Bottoms', count: products.filter(p => p.category === 'Bottoms').length },
+  ];
+
+  useEffect(() => {
+    fetchProducts();
+  }, []);
+
+  const fetchProducts = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .eq('in_stock', true)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setProducts(data || []);
+    } catch (error) {
+      console.error('Error fetching products:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const filteredProducts = products
     .filter(product => 
       selectedCategory === 'all' || 
-      product.category.toLowerCase() === selectedCategory ||
-      product.category === 'All'
+      product.category.toLowerCase() === selectedCategory
     )
     .sort((a, b) => {
       switch (sortBy) {
@@ -21,8 +50,6 @@ const Index = () => {
           return a.price - b.price;
         case 'price-high':
           return b.price - a.price;
-        case 'rating':
-          return b.rating - a.rating;
         case 'name':
         default:
           return a.name.localeCompare(b.name);
@@ -42,16 +69,24 @@ const Index = () => {
           onSortChange={setSortBy}
         />
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-          {filteredProducts.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
-        </div>
-
-        {filteredProducts.length === 0 && (
+        {loading ? (
           <div className="text-center py-12">
-            <p className="text-shop-text-light">No products found in this category.</p>
+            <p className="text-shop-text-light">Loading products...</p>
           </div>
+        ) : (
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+              {filteredProducts.map((product) => (
+                <ProductCard key={product.id} product={product} />
+              ))}
+            </div>
+
+            {filteredProducts.length === 0 && !loading && (
+              <div className="text-center py-12">
+                <p className="text-shop-text-light">No products found in this category.</p>
+              </div>
+            )}
+          </>
         )}
       </main>
 
