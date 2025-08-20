@@ -14,92 +14,92 @@ const Header = () => {
   const location = useLocation();
 
   return (
-    <header className="sticky top-0 z-50 border-b border-shop-border bg-shop-surface/95 backdrop-blur supports-[backdrop-filter]:bg-shop-surface/60">
-      <div className="container mx-auto px-4">
+    <header className="sticky top-0 z-50 border-b border-gray-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80">
+      <div className="container mx-auto px-6">
         <div className="flex h-16 items-center justify-between">
-          {/* Left - Menu and Navigation */}
-          <div className="flex items-center space-x-8">
-            <Button variant="ghost" size="sm" className="md:hidden">
-              <Menu className="h-5 w-5" />
-            </Button>
+          {/* Left - Logo and Navigation */}
+          <div className="flex items-center space-x-12">
+            <button 
+              onClick={() => navigate('/')}
+              className="text-2xl font-light text-black hover:text-gray-600 transition-colors tracking-wide"
+            >
+              LOOM
+            </button>
             
             <nav className="hidden md:flex items-center space-x-8">
-              <button className="text-shop-text hover:text-shop-accent transition-colors">
+              <button 
+                onClick={() => navigate('/')}
+                className="text-sm font-medium text-gray-700 hover:text-black transition-colors uppercase tracking-wider"
+              >
                 Shop
               </button>
-              <button className="text-shop-text hover:text-shop-accent transition-colors">
-                Journal
-              </button>
-              <button className="text-shop-text hover:text-shop-accent transition-colors">
+              <button className="text-sm font-medium text-gray-700 hover:text-black transition-colors uppercase tracking-wider">
                 About
               </button>
+              {!user && (
+                <button 
+                  onClick={() => navigate('/admin-login')}
+                  className="text-sm font-medium text-gray-700 hover:text-black transition-colors uppercase tracking-wider"
+                >
+                  Admin
+                </button>
+              )}
             </nav>
           </div>
 
-          {/* Center - Logo */}
-          <div className="absolute left-1/2 transform -translate-x-1/2">
-            <button 
-              onClick={() => navigate('/')}
-              className="text-xl font-semibold text-shop-text hover:text-shop-accent transition-colors"
-            >
-              ✱ Loom & Co.
-            </button>
-          </div>
-
           {/* Right - Actions */}
-          <div className="flex items-center space-x-4">
-            <Button variant="ghost" size="sm" className="hidden md:flex">
-              <Search className="h-5 w-5" />
+          <div className="flex items-center space-x-6">
+            <Button variant="ghost" size="sm" className="hidden md:flex p-2 hover:bg-gray-100">
+              <Search className="h-5 w-5 text-gray-700" />
             </Button>
             
             {user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="sm">
-                    <User className="h-5 w-5" />
-                    <span className="hidden sm:ml-2 sm:inline">Account</span>
+                  <Button variant="ghost" size="sm" className="p-2 hover:bg-gray-100">
+                    <User className="h-5 w-5 text-gray-700" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={() => navigate('/account')}>
+                <DropdownMenuContent align="end" className="bg-white border border-gray-200">
+                  <DropdownMenuItem onClick={() => navigate('/account')} className="text-gray-700 hover:bg-gray-50">
                     My Account
                   </DropdownMenuItem>
                   {isAdmin && (
-                    <DropdownMenuItem onClick={() => navigate('/admin')}>
+                    <DropdownMenuItem onClick={() => navigate('/admin')} className="text-gray-700 hover:bg-gray-50">
                       Admin Dashboard
                     </DropdownMenuItem>
                   )}
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={signOut}>
+                  <DropdownMenuSeparator className="bg-gray-200" />
+                  <DropdownMenuItem onClick={signOut} className="text-gray-700 hover:bg-gray-50">
                     <LogOut className="w-4 h-4 mr-2" />
                     Sign Out
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
-              <Button variant="ghost" size="sm" onClick={() => navigate('/auth')}>
-                <User className="h-5 w-5" />
-                <span className="hidden sm:ml-2 sm:inline">Account</span>
+              <Button variant="ghost" size="sm" onClick={() => navigate('/auth')} className="p-2 hover:bg-gray-100">
+                <User className="h-5 w-5 text-gray-700" />
               </Button>
             )}
             
-            <Button variant="ghost" size="sm" onClick={() => navigate('/wishlist')}>
-              <Heart className="h-5 w-5" />
-              <span className="hidden sm:ml-2 sm:inline">Wishlist ({wishlistCount})</span>
+            <Button variant="ghost" size="sm" onClick={() => navigate('/wishlist')} className="relative p-2 hover:bg-gray-100">
+              <Heart className="h-5 w-5 text-gray-700" />
+              {wishlistCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-black text-white text-xs rounded-full h-4 w-4 flex items-center justify-center text-[10px]">
+                  {wishlistCount}
+                </span>
+              )}
             </Button>
             
             <Button 
               variant="ghost" 
               size="sm" 
               onClick={() => location.pathname === '/cart' ? toggleCart() : navigate('/cart')}
-              className="relative"
+              className="relative p-2 hover:bg-gray-100"
             >
-              <ShoppingBag className="h-5 w-5" />
-              <span className="hidden sm:ml-2 sm:inline">
-                Bag ({totalItems})
-              </span>
+              <ShoppingBag className="h-5 w-5 text-gray-700" />
               {totalItems > 0 && (
-                <span className="absolute -top-1 -right-1 bg-shop-accent text-shop-surface text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                <span className="absolute -top-1 -right-1 bg-black text-white text-xs rounded-full h-4 w-4 flex items-center justify-center text-[10px]">
                   {totalItems}
                 </span>
               )}
