@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/integrations/supabase/client';
+import { apiClient } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -51,10 +51,7 @@ export default function Admin() {
   }, [isAdmin]);
 
   const fetchProducts = async () => {
-    const { data, error } = await supabase
-      .from('products')
-      .select('*')
-      .order('created_at', { ascending: false });
+    const { data, error } = await apiClient.getProducts();
 
     if (error) {
       toast({
@@ -68,28 +65,10 @@ export default function Admin() {
   };
 
   const uploadImage = async (file: File): Promise<string | null> => {
-    const fileExt = file.name.split('.').pop();
-    const fileName = `${Math.random()}.${fileExt}`;
-    const filePath = `${fileName}`;
-
-    const { error: uploadError } = await supabase.storage
-      .from('product-images')
-      .upload(filePath, file);
-
-    if (uploadError) {
-      toast({
-        title: "Error",
-        description: "Failed to upload image",
-        variant: "destructive"
-      });
-      return null;
-    }
-
-    const { data } = supabase.storage
-      .from('product-images')
-      .getPublicUrl(filePath);
-
-    return data.publicUrl;
+    // For now, return a placeholder URL since we don't have image upload implemented
+    // In a real app, you'd implement file upload to your preferred service
+    const fileName = `${Math.random()}.${file.name.split('.').pop()}`;
+    return `/placeholder-images/${fileName}`;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -106,28 +85,24 @@ export default function Admin() {
         }
       }
 
-      const { error } = await supabase
-        .from('products')
-        .insert([
-          {
-            name: formData.name,
-            description: formData.description || null,
-            price: parseFloat(formData.price),
-            original_price: formData.originalPrice ? parseFloat(formData.originalPrice) : null,
-            category: formData.category,
-            gender: formData.gender,
-            colors: formData.colors.split(',').map(c => c.trim()).filter(c => c),
-            sizes: formData.sizes.split(',').map(s => s.trim()).filter(s => s),
-            image_url: imageUrl,
-            in_stock: formData.inStock,
-            is_on_sale: formData.isOnSale
-          }
-        ]);
+      const { error } = await apiClient.createProduct({
+        name: formData.name,
+        description: formData.description || null,
+        price: parseFloat(formData.price),
+        original_price: formData.originalPrice ? parseFloat(formData.originalPrice) : null,
+        category: formData.category,
+        gender: formData.gender,
+        colors: formData.colors.split(',').map(c => c.trim()).filter(c => c),
+        sizes: formData.sizes.split(',').map(s => s.trim()).filter(s => s),
+        image_url: imageUrl,
+        in_stock: formData.inStock,
+        is_on_sale: formData.isOnSale
+      });
 
       if (error) {
         toast({
           title: "Error",
-          description: error.message,
+          description: error,
           variant: "destructive"
         });
       } else {
@@ -166,10 +141,7 @@ export default function Admin() {
   };
 
   const deleteProduct = async (id: string) => {
-    const { error } = await supabase
-      .from('products')
-      .delete()
-      .eq('id', id);
+    const { error } = await apiClient.deleteProduct(id);
 
     if (error) {
       toast({

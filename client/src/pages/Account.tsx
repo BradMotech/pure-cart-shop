@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/integrations/supabase/client';
+import { apiClient } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -11,8 +11,8 @@ import { User, ShoppingBag, Heart } from 'lucide-react';
 
 interface Profile {
   id: string;
-  email: string | null;
-  full_name: string | null;
+  email: string;
+  full_name?: string;
 }
 
 interface Order {
@@ -39,11 +39,7 @@ export default function Account() {
   const fetchProfile = async () => {
     if (!user) return;
     
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', user.id)
-      .maybeSingle();
+    const { data, error } = await apiClient.getProfile();
 
     if (error) {
       toast({
@@ -60,12 +56,7 @@ export default function Account() {
   const fetchOrders = async () => {
     if (!user) return;
     
-    const { data, error } = await supabase
-      .from('orders')
-      .select('*')
-      .eq('user_id', user.id)
-      .order('created_at', { ascending: false })
-      .limit(10);
+    const { data, error } = await apiClient.getOrders();
 
     if (error) {
       toast({
@@ -83,10 +74,7 @@ export default function Account() {
     
     setUpdating(true);
     
-    const { error } = await supabase
-      .from('profiles')
-      .update({ full_name: fullName })
-      .eq('id', user.id);
+    const { error } = await apiClient.updateProfile({ full_name: fullName });
 
     if (error) {
       toast({

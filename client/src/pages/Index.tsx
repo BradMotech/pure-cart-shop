@@ -3,12 +3,13 @@ import Header from '@/components/Header';
 import ProductCard from '@/components/ProductCard';
 import ProductFilters from '@/components/ProductFilters';
 import CartSidebar from '@/components/CartSidebar';
-import { supabase } from '@/integrations/supabase/client';
+import { apiClient } from '@/lib/api';
+import { Product } from '@/types/product';
 
 const Index = () => {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [sortBy, setSortBy] = useState('name');
-  const [products, setProducts] = useState([]);
+  const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
 
   const categories = [
@@ -24,13 +25,9 @@ const Index = () => {
 
   const fetchProducts = async () => {
     try {
-      const { data, error } = await supabase
-        .from('products')
-        .select('*')
-        .eq('in_stock', true)
-        .order('created_at', { ascending: false });
+      const { data, error } = await apiClient.getProducts();
 
-      if (error) throw error;
+      if (error) throw new Error(error);
       setProducts(data || []);
     } catch (error) {
       console.error('Error fetching products:', error);

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCart } from '@/contexts/CartContext';
 import { Product } from '@/types/product';
-import { supabase } from '@/integrations/supabase/client';
+import { apiClient } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { toast } from '@/hooks/use-toast';
@@ -43,25 +43,7 @@ export default function Wishlist() {
     
     setLoadingWishlist(true);
     
-    const { data, error } = await supabase
-      .from('wishlist')
-      .select(`
-        id,
-        product:products (
-          id,
-          name,
-          price,
-          original_price,
-          image_url,
-          colors,
-          in_stock,
-          is_on_sale,
-          category,
-          gender,
-          description
-        )
-      `)
-      .eq('user_id', user.id);
+    const { data, error } = await apiClient.getWishlist();
 
     if (error) {
       toast({
@@ -77,10 +59,7 @@ export default function Wishlist() {
   };
 
   const removeFromWishlist = async (wishlistId: string) => {
-    const { error } = await supabase
-      .from('wishlist')
-      .delete()
-      .eq('id', wishlistId);
+    const { error } = await apiClient.removeFromWishlist(wishlistId);
 
     if (error) {
       toast({
@@ -102,14 +81,14 @@ export default function Wishlist() {
       id: item.product.id,
       name: item.product.name,
       price: item.product.price,
-      original_price: item.product.original_price,
-      image_url: item.product.image_url,
+      original_price: item.product.original_price || undefined,
+      image_url: item.product.image_url || undefined,
       category: item.product.category,
       gender: item.product.gender,
       colors: item.product.colors,
       in_stock: item.product.in_stock,
       is_on_sale: item.product.is_on_sale,
-      description: item.product.description
+      description: item.product.description || undefined
     };
     
     addItem(product);
