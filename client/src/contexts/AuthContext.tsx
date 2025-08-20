@@ -73,16 +73,21 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     if (data && !error) {
       setProfile(data);
-      setIsAdmin(data.is_admin || false);
+      // Check if user is admin by email or other criteria since is_admin column might not exist
+      const adminEmails = ['admin@loom.com', 'admin@example.com'];
+      const isUserAdmin = adminEmails.includes(data.email || '') || (data.email?.includes('admin') ?? false);
+      setIsAdmin(!!isUserAdmin);
     } else {
       // If no profile exists, create one
       if (error && error.code === 'PGRST116') {
-        await supabase.from('profiles').insert({
-          id: userId,
-          email: null,
-          full_name: null,
-          is_admin: false
-        });
+        const { data: userData } = await supabase.auth.getUser();
+        if (userData.user) {
+          await supabase.from('profiles').insert({
+            id: userId,
+            email: userData.user.email,
+            full_name: null
+          });
+        }
       }
     }
   };
@@ -103,8 +108,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       await supabase.from('profiles').insert({
         id: data.user.id,
         email: data.user.email,
-        full_name: fullName,
-        is_admin: false
+        full_name: fullName
       });
     }
     

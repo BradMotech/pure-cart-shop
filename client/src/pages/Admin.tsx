@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { apiClient } from '@/lib/api';
+import Loader from '@/components/Loader';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -186,15 +186,29 @@ export default function Admin() {
   };
 
   if (loading) {
-    return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+    return <Loader fullScreen text="Loading admin panel..." />;
   }
 
-  if (!user || !isAdmin) {
-    return <Navigate to="/auth" replace />;
+  if (!user) {
+    return <Navigate to="/admin-login" replace />;
+  }
+  
+  if (!isAdmin) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-white">
+        <div className="text-center">
+          <h1 className="text-2xl font-light text-black mb-4">Access Denied</h1>
+          <p className="text-gray-600 mb-6">You don't have admin privileges.</p>
+          <Button onClick={() => window.location.href = '/'} variant="outline">
+            Return to Store
+          </Button>
+        </div>
+      </div>
+    );
   }
 
   return (
-    <div className="min-h-screen bg-background p-6">
+    <div className="min-h-screen bg-white p-6">
       <div className="max-w-6xl mx-auto">
         <h1 className="text-3xl font-light mb-8">Admin Dashboard</h1>
         
