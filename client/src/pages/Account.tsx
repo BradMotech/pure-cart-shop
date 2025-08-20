@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { apiClient } from '@/lib/api';
+import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -39,7 +39,11 @@ export default function Account() {
   const fetchProfile = async () => {
     if (!user) return;
     
-    const { data, error } = await apiClient.getProfile();
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', user.id)
+      .single();
 
     if (error) {
       toast({
@@ -56,8 +60,18 @@ export default function Account() {
   const fetchOrders = async () => {
     if (!user) return;
     
-    const { data, error } = await apiClient.getOrders();
-
+    const { data, error } = await supabase
+      .from('orders')
+      .select(`
+        *,
+        order_items(
+          *,
+          products(*)
+        )
+      `)
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false });
+    
     if (error) {
       toast({
         title: "Error",
@@ -74,7 +88,10 @@ export default function Account() {
     
     setUpdating(true);
     
-    const { error } = await apiClient.updateProfile({ full_name: fullName });
+    const { error } = await supabase
+      .from('profiles')
+      .update({ full_name: fullName })
+      .eq('id', user?.id);
 
     if (error) {
       toast({

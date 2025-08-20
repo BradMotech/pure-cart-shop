@@ -3,7 +3,7 @@ import Header from '@/components/Header';
 import ProductCard from '@/components/ProductCard';
 import ProductFilters from '@/components/ProductFilters';
 import CartSidebar from '@/components/CartSidebar';
-import { apiClient } from '@/lib/api';
+import { supabase } from '@/integrations/supabase/client';
 import { Product } from '@/types/product';
 
 const Index = () => {
@@ -25,9 +25,12 @@ const Index = () => {
 
   const fetchProducts = async () => {
     try {
-      const { data, error } = await apiClient.getProducts();
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .order('created_at', { ascending: false });
 
-      if (error) throw new Error(error);
+      if (error) throw error;
       setProducts(data || []);
     } catch (error) {
       console.error('Error fetching products:', error);

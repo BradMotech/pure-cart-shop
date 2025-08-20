@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCart } from '@/contexts/CartContext';
-import { apiClient } from '@/lib/api';
+import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/hooks/use-toast';
 import { CreditCard } from 'lucide-react';
@@ -39,25 +39,43 @@ export const PayfastButton = ({ totalAmount, onSuccess }: PayfastButtonProps) =>
 
     try {
       // Create order in database
+      const { data: order, error: orderError } = await supabase
+        .from('orders')
+        .insert([{
+          user_id: user.id,
+          total_amount: totalAmount,
+          status: 'pending'
+        }])
+        .select()
+        .single();
+
+      if (orderError) {
+        throw orderError;
+      }
+
+      // Create order items
       const orderItems = state.items.map(item => ({
+        order_id: order.id,
         product_id: item.product.id,
         quantity: item.quantity,
         price: item.product.price,
         selected_color: item.selectedColor
       }));
 
-      const { data: order, error: orderError } = await apiClient.createOrder({
-        total_amount: totalAmount,
-        items: orderItems,
-        payment_id: null
-      });
+      const { error: itemsError } = await supabase
+        .from('order_items')
+        .insert(orderItems);
 
-      if (orderError) {
-        throw new Error(orderError);
+      if (itemsError) {
+        throw itemsError;
       }
 
       // Get user's profile for payment details
-      const { data: profile } = await apiClient.getProfile();
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single();
 
       // Create Payfast payment form
       const merchant_id = '10000100'; // Sandbox merchant ID

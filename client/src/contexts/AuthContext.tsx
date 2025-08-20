@@ -1,19 +1,23 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { apiClient } from '@/lib/api';
+import { supabase } from '@/integrations/supabase/client';
+import type { User } from '@supabase/supabase-js';
 
-interface User {
+interface UserProfile {
   id: string;
-  email: string;
-  full_name?: string;
+  email: string | null;
+  full_name?: string | null;
+  is_admin?: boolean;
+  created_at?: string | null;
+  updated_at?: string | null;
 }
 
 interface AuthContextType {
   user: User | null;
+  profile: UserProfile | null;
   isAdmin: boolean;
   loading: boolean;
   signUp: (email: string, password: string, fullName: string) => Promise<{ error: any }>;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
-  setupAdmin: (email: string, password: string, fullName?: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
 }
 
@@ -21,88 +25,112 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check if there's an existing token and validate it
-    const initAuth = async () => {
-      const token = localStorage.getItem('auth_token');
-      if (token) {
-        const { data, error } = await apiClient.getProfile();
-        if (data && !error) {
-          setUser({
-            id: data.id,
-            email: data.email,
-            full_name: data.full_name
-          });
-          setIsAdmin(data.isAdmin || false);
-        } else {
-          // Invalid token, remove it
-          apiClient.removeToken();
-        }
+    // Get initial session
+    const getInitialSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (session?.user) {
+        setUser(session.user);
+        await fetchProfile(session.user.id);
       }
+      
       setLoading(false);
     };
 
-    initAuth();
+    getInitialSession();
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (session?.user) {
+          setUser(session.user);
+          await fetchProfile(session.user.id);
+        } else {
+          setUser(null);
+          setProfile(null);
+          setIsAdmin(false);
+        }
+        setLoading(false);
+      }
+    );
+
+    return () => subscription.unsubscribe();
   }, []);
 
-  const signUp = async (email: string, password: string, fullName: string) => {
-    const { data, error } = await apiClient.signUp(email, password, fullName);
-    
+  const fetchProfile = async (userId: string) => {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', userId)
+      .single();
+
     if (data && !error) {
-      setUser(data.user);
-      // Fetch profile to get admin status
-      const profileResult = await apiClient.getProfile();
-      if (profileResult.data) {
-        setIsAdmin(profileResult.data.isAdmin || false);
+      setProfile(data);
+      setIsAdmin(data.is_admin || false);
+    } else {
+      // If no profile exists, create one
+      if (error && error.code === 'PGRST116') {
+        await supabase.from('profiles').insert({
+          id: userId,
+          email: null,
+          full_name: null,
+          is_admin: false
+        });
       }
     }
+  };
+
+  const signUp = async (email: string, password: string, fullName: string) => {
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          full_name: fullName,
+        },
+      },
+    });
     
-    return { error: error ? { message: error } : null };
+    if (data.user && !error) {
+      // Create profile
+      await supabase.from('profiles').insert({
+        id: data.user.id,
+        email: data.user.email,
+        full_name: fullName,
+        is_admin: false
+      });
+    }
+    
+    return { error };
   };
 
   const signIn = async (email: string, password: string) => {
-    const { data, error } = await apiClient.signIn(email, password);
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
     
-    if (data && !error) {
-      setUser(data.user);
-      // Fetch profile to get admin status
-      const profileResult = await apiClient.getProfile();
-      if (profileResult.data) {
-        setIsAdmin(profileResult.data.isAdmin || false);
-      }
-    }
-    
-    return { error: error ? { message: error } : null };
+    return { error };
   };
 
-  const setupAdmin = async (email: string, password: string, fullName?: string) => {
-    const { data, error } = await apiClient.setupAdmin(email, password, fullName);
-    
-    if (data && !error) {
-      setUser(data.user);
-      setIsAdmin(true); // Admin users are always admin
-    }
-    
-    return { error: error || null };
-  };
 
   const signOut = async () => {
-    apiClient.signOut();
-    setUser(null);
-    setIsAdmin(false);
+    await supabase.auth.signOut();
   };
 
   return (
     <AuthContext.Provider value={{
       user,
+      profile,
       isAdmin,
       loading,
       signUp,
       signIn,
-      setupAdmin,
       signOut
     }}>
       {children}

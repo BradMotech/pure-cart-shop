@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from '@/hooks/use-toast';
 import { Navigate } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
 import { Trash2, Upload } from 'lucide-react';
 
 interface DatabaseProduct {
@@ -19,11 +20,13 @@ interface DatabaseProduct {
   original_price: number | null;
   category: string;
   gender: string;
-  colors: string[];
-  sizes: string[];
+  colors: string[] | null;
+  sizes: string[] | null;
   image_url: string | null;
-  in_stock: boolean;
-  is_on_sale: boolean;
+  in_stock: boolean | null;
+  is_on_sale: boolean | null;
+  created_at?: string | null;
+  updated_at?: string | null;
 }
 
 export default function Admin() {
@@ -51,7 +54,10 @@ export default function Admin() {
   }, [isAdmin]);
 
   const fetchProducts = async () => {
-    const { data, error } = await apiClient.getProducts();
+    const { data, error } = await supabase
+      .from('products')
+      .select('*')
+      .order('created_at', { ascending: false });
 
     if (error) {
       toast({
@@ -65,10 +71,26 @@ export default function Admin() {
   };
 
   const uploadImage = async (file: File): Promise<string | null> => {
-    // For now, return a placeholder URL since we don't have image upload implemented
-    // In a real app, you'd implement file upload to your preferred service
-    const fileName = `${Math.random()}.${file.name.split('.').pop()}`;
-    return `/placeholder-images/${fileName}`;
+    const fileName = `${Date.now()}-${file.name}`;
+    const { data, error } = await supabase.storage
+      .from('product-images')
+      .upload(fileName, file);
+
+    if (error) {
+      console.error('Upload error:', error);
+      toast({
+        title: "Upload Error",
+        description: "Failed to upload image",
+        variant: "destructive"
+      });
+      return null;
+    }
+
+    const { data: { publicUrl } } = supabase.storage
+      .from('product-images')
+      .getPublicUrl(fileName);
+
+    return publicUrl;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -85,24 +107,26 @@ export default function Admin() {
         }
       }
 
-      const { error } = await apiClient.createProduct({
-        name: formData.name,
-        description: formData.description || null,
-        price: parseFloat(formData.price),
-        original_price: formData.originalPrice ? parseFloat(formData.originalPrice) : null,
-        category: formData.category,
-        gender: formData.gender,
-        colors: formData.colors.split(',').map(c => c.trim()).filter(c => c),
-        sizes: formData.sizes.split(',').map(s => s.trim()).filter(s => s),
-        image_url: imageUrl,
-        in_stock: formData.inStock,
-        is_on_sale: formData.isOnSale
-      });
+      const { error } = await supabase
+        .from('products')
+        .insert([{
+          name: formData.name,
+          description: formData.description || null,
+          price: parseFloat(formData.price),
+          original_price: formData.originalPrice ? parseFloat(formData.originalPrice) : null,
+          category: formData.category,
+          gender: formData.gender,
+          colors: formData.colors.split(',').map(c => c.trim()).filter(c => c),
+          sizes: formData.sizes.split(',').map(s => s.trim()).filter(s => s),
+          image_url: imageUrl,
+          in_stock: formData.inStock,
+          is_on_sale: formData.isOnSale
+        }]);
 
       if (error) {
         toast({
           title: "Error",
-          description: error,
+          description: error.message || "Failed to add product",
           variant: "destructive"
         });
       } else {
@@ -141,7 +165,10 @@ export default function Admin() {
   };
 
   const deleteProduct = async (id: string) => {
-    const { error } = await apiClient.deleteProduct(id);
+    const { error } = await supabase
+      .from('products')
+      .delete()
+      .eq('id', id);
 
     if (error) {
       toast({

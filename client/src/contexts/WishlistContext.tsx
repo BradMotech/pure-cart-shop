@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { apiClient } from '@/lib/api';
+import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 
 interface WishlistContextType {
@@ -28,12 +28,15 @@ export const WishlistProvider = ({ children }: { children: React.ReactNode }) =>
   const fetchWishlist = async () => {
     if (!user) return;
     
-    const { data, error } = await apiClient.getWishlist();
+    const { data, error } = await supabase
+      .from('wishlist')
+      .select('product_id')
+      .eq('user_id', user.id);
 
     if (error) {
       console.error('Error fetching wishlist:', error);
     } else {
-      setWishlistItems(data?.map(item => item.product.id) || []);
+      setWishlistItems(data?.map(item => item.product_id) || []);
     }
   };
 
@@ -47,7 +50,9 @@ export const WishlistProvider = ({ children }: { children: React.ReactNode }) =>
       return;
     }
 
-    const { error } = await apiClient.addToWishlist(productId);
+    const { error } = await supabase
+      .from('wishlist')
+      .insert([{ user_id: user.id, product_id: productId }]);
 
     if (error) {
       toast({
@@ -67,15 +72,11 @@ export const WishlistProvider = ({ children }: { children: React.ReactNode }) =>
   const removeFromWishlist = async (productId: string) => {
     if (!user) return;
 
-    // First find the wishlist item by product ID, then remove it
-    const { data: wishlistData } = await apiClient.getWishlist();
-    const wishlistItem = wishlistData?.find(item => item.product.id === productId);
-    
-    let error = null;
-    if (wishlistItem) {
-      const result = await apiClient.removeFromWishlist(wishlistItem.id);
-      error = result.error;
-    }
+    const { error } = await supabase
+      .from('wishlist')
+      .delete()
+      .eq('user_id', user.id)
+      .eq('product_id', productId);
 
     if (error) {
       toast({

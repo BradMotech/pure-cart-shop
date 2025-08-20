@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCart } from '@/contexts/CartContext';
 import { Product } from '@/types/product';
-import { apiClient } from '@/lib/api';
+import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { toast } from '@/hooks/use-toast';
@@ -43,7 +43,13 @@ export default function Wishlist() {
     
     setLoadingWishlist(true);
     
-    const { data, error } = await apiClient.getWishlist();
+    const { data, error } = await supabase
+      .from('wishlist')
+      .select(`
+        id,
+        product:products(*)
+      `)
+      .eq('user_id', user.id);
 
     if (error) {
       toast({
@@ -59,7 +65,10 @@ export default function Wishlist() {
   };
 
   const removeFromWishlist = async (wishlistId: string) => {
-    const { error } = await apiClient.removeFromWishlist(wishlistId);
+    const { error } = await supabase
+      .from('wishlist')
+      .delete()
+      .eq('id', wishlistId);
 
     if (error) {
       toast({
