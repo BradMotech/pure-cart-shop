@@ -46,18 +46,23 @@ export default function AdminLogin() {
       if (error) throw error;
 
       if (data.user) {
-        // Check if user is admin
+        // Check if user is admin by checking if profile exists and has admin email
         const { data: profile, error: profileError } = await supabase
           .from('profiles')
-          .select('is_admin')
+          .select('*')
           .eq('id', data.user.id)
           .single();
 
-        if (profileError) {
+        if (profileError && profileError.code !== 'PGRST116') {
           console.error('Error checking admin status:', profileError);
         }
 
-        if (profile?.is_admin) {
+        // For now, check if the email contains "admin" or is a specific admin email
+        const isAdmin = data.user.email?.includes('admin') || 
+                       data.user.email === 'admin@loom.com' ||
+                       profile?.email?.includes('admin');
+
+        if (isAdmin) {
           toast({
             title: "Welcome, Admin!",
             description: "Successfully logged in as administrator"

@@ -3,6 +3,7 @@ import Header from '@/components/Header';
 import ProductCard from '@/components/ProductCard';
 import ProductFilters from '@/components/ProductFilters';
 import CartSidebar from '@/components/CartSidebar';
+import Loader from '@/components/Loader';
 import { supabase } from '@/integrations/supabase/client';
 import { Product } from '@/types/product';
 
@@ -25,13 +26,33 @@ const Index = () => {
 
   const fetchProducts = async () => {
     try {
+      console.log('Fetching products from Supabase...');
       const { data, error } = await supabase
         .from('products')
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
-      setProducts(data || []);
+      console.log('Supabase response:', { data, error });
+      
+      if (error) {
+        console.error('Supabase error:', error);
+        throw error;
+      }
+      
+      // Transform data to match Product interface
+      const transformedProducts = (data || []).map(product => ({
+        ...product,
+        colors: product.colors || [],
+        sizes: product.sizes || [],
+        in_stock: product.in_stock ?? true,
+        is_on_sale: product.is_on_sale ?? false,
+        description: product.description || undefined,
+        image_url: product.image_url || undefined,
+        original_price: product.original_price || undefined
+      }));
+      
+      console.log('Transformed products:', transformedProducts);
+      setProducts(transformedProducts);
     } catch (error) {
       console.error('Error fetching products:', error);
     } finally {
@@ -57,7 +78,7 @@ const Index = () => {
     });
 
   return (
-    <div className="min-h-screen bg-shop-background">
+    <div className="min-h-screen bg-white">
       <Header />
       
       <main className="container mx-auto px-4 py-8">
@@ -70,9 +91,7 @@ const Index = () => {
         />
 
         {loading ? (
-          <div className="text-center py-12">
-            <p className="text-shop-text-light">Loading products...</p>
-          </div>
+          <Loader size="lg" text="Loading products..." />
         ) : (
           <>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">

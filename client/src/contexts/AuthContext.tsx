@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import type { User } from '@supabase/supabase-js';
+import { LoadingOverlay } from '@/components/Loader';
 
 interface UserProfile {
   id: string;
@@ -28,6 +29,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [actionLoading, setActionLoading] = useState(false);
 
   useEffect(() => {
     // Get initial session
@@ -120,7 +122,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
 
   const signOut = async () => {
+    setActionLoading(true);
     await supabase.auth.signOut();
+    // Keep loading for a moment to show transition
+    setTimeout(() => setActionLoading(false), 1000);
   };
 
   return (
@@ -133,6 +138,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       signIn,
       signOut
     }}>
+      {actionLoading && <LoadingOverlay text="Signing out..." />}
       {children}
     </AuthContext.Provider>
   );
