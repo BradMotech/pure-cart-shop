@@ -9,12 +9,13 @@ import { toast } from '@/hooks/use-toast';
 
 export default function Auth() {
   const [isLogin, setIsLogin] = useState(true);
+  const [isAdminSetup, setIsAdminSetup] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
   const [loading, setLoading] = useState(false);
   
-  const { signIn, signUp } = useAuth();
+  const { signIn, signUp, setupAdmin } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -22,7 +23,22 @@ export default function Auth() {
     setLoading(true);
 
     try {
-      if (isLogin) {
+      if (isAdminSetup) {
+        const { error } = await setupAdmin(email, password, fullName);
+        if (error) {
+          toast({
+            title: "Error",
+            description: error,
+            variant: "destructive"
+          });
+        } else {
+          toast({
+            title: "Admin account created!",
+            description: "You now have admin access."
+          });
+          navigate('/admin');
+        }
+      } else if (isLogin) {
         const { error } = await signIn(email, password);
         if (error) {
           toast({
@@ -68,12 +84,17 @@ export default function Auth() {
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-light">
-            {isLogin ? 'Sign In' : 'Create Account'}
+            {isAdminSetup ? 'Setup Admin Account' : isLogin ? 'Sign In' : 'Create Account'}
           </CardTitle>
+          {isAdminSetup && (
+            <p className="text-sm text-muted-foreground mt-2">
+              Create the first admin account for this store
+            </p>
+          )}
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
-            {!isLogin && (
+            {(!isLogin || isAdminSetup) && (
               <div className="space-y-2">
                 <Label htmlFor="fullName">Full Name</Label>
                 <Input
@@ -81,7 +102,7 @@ export default function Auth() {
                   type="text"
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
-                  required
+                  required={isAdminSetup}
                 />
               </div>
             )}
@@ -113,20 +134,35 @@ export default function Auth() {
               className="w-full"
               disabled={loading}
             >
-              {loading ? 'Loading...' : (isLogin ? 'Sign In' : 'Create Account')}
+              {loading ? 'Loading...' : (isAdminSetup ? 'Setup Admin' : isLogin ? 'Sign In' : 'Create Account')}
             </Button>
           </form>
           
-          <div className="mt-4 text-center">
+          <div className="mt-4 text-center space-y-2">
+            {!isAdminSetup && (
+              <button
+                type="button"
+                onClick={() => setIsLogin(!isLogin)}
+                className="text-sm text-muted-foreground hover:text-foreground transition-colors block w-full"
+              >
+                {isLogin 
+                  ? "Don't have an account? Sign up" 
+                  : "Already have an account? Sign in"
+                }
+              </button>
+            )}
+            
             <button
               type="button"
-              onClick={() => setIsLogin(!isLogin)}
-              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+              onClick={() => {
+                setIsAdminSetup(!isAdminSetup);
+                setEmail('');
+                setPassword('');
+                setFullName('');
+              }}
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors block w-full"
             >
-              {isLogin 
-                ? "Don't have an account? Sign up" 
-                : "Already have an account? Sign in"
-              }
+              {isAdminSetup ? 'Back to Sign In' : 'Setup Admin Account'}
             </button>
           </div>
           

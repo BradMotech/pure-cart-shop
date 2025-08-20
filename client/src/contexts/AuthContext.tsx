@@ -13,6 +13,7 @@ interface AuthContextType {
   loading: boolean;
   signUp: (email: string, password: string, fullName: string) => Promise<{ error: any }>;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
+  setupAdmin: (email: string, password: string, fullName?: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
 }
 
@@ -77,6 +78,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     return { error: error ? { message: error } : null };
   };
 
+  const setupAdmin = async (email: string, password: string, fullName?: string) => {
+    const { data, error } = await apiClient.setupAdmin(email, password, fullName);
+    
+    if (data && !error) {
+      setUser(data.user);
+      setIsAdmin(true); // Admin users are always admin
+    }
+    
+    return { error: error || null };
+  };
+
   const signOut = async () => {
     apiClient.signOut();
     setUser(null);
@@ -90,6 +102,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       loading,
       signUp,
       signIn,
+      setupAdmin,
       signOut
     }}>
       {children}

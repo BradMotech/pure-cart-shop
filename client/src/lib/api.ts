@@ -92,6 +92,19 @@ class ApiClient {
     });
   }
 
+  async setupAdmin(email: string, password: string, fullName?: string) {
+    const result = await this.request<{ user: any; token: string; message: string }>('/auth/setup-admin', {
+      method: 'POST',
+      body: JSON.stringify({ email, password, full_name: fullName }),
+    });
+
+    if (result.data) {
+      this.setToken(result.data.token);
+    }
+
+    return result;
+  }
+
   signOut() {
     this.removeToken();
   }

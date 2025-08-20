@@ -126,6 +126,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ error: 'Internal server error' });
     }
   });
+
+  // Admin setup route - creates first admin user
+  app.post('/api/auth/setup-admin', async (req, res) => {
+    try {
+      const { email, password, full_name } = req.body;
+      
+      // Check if any admin users already exist
+      const existingAdmin = await db.select().from(userRoles).where(eq(userRoles.role, 'admin')).limit(1);
+      if (existingAdmin.length > 0) {
+        return res.status(400).json({ error: 'Admin user already exists' });
+      }
+      
+      // Check if user exists
+      let user = await db.select().from(users).where(eq(users.email, email)).limit(1);
+      
+      if (user.length === 0) {
+        // Create new user
+        const hashedPassword = await bcrypt.hash(password, 10);
+        user = await db.insert(users).values({
+          email,
+          password: hashedPassword,
+          full_name: full_name || null
+        }).returning();
+      }
+      
+      // Make user admin
+      await db.insert(userRoles).values({
+        user_id: user[0].id,
+        role: 'admin'
+      });
+      
+      const token = jwt.sign({ userId: user[0].id, email: user[0].email }, JWT_SECRET);
+      
+      res.json({ 
+        user: { id: user[0].id, email: user[0].email, full_name: user[0].full_name }, 
+        token,
+        message: 'Admin user created successfully' 
+      });
+    } catch (error) {
+      console.error('Admin setup error:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
   
   // Products routes
   app.get('/api/products', async (req, res) => {
