@@ -1,5 +1,15 @@
 {
   "projects": {
     "default": "e-tender-motechxpress"
-  }
+  },
+    "targets": {
+    "e-tender-motechxpress": {
+      "hosting": {
+        "yewa-apparel": [
+          "yewa-apparel"
+        ]
+      }
+    }
+  },
+  "etags": {}
 }
