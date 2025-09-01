@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { ShoppingCart, Heart, User } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useCart } from "@/contexts/CartContext";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface HeaderProps {
   onCartClick?: () => void;
@@ -9,6 +10,7 @@ interface HeaderProps {
 
 export const Header = ({ onCartClick }: HeaderProps) => {
   const { getTotalItems } = useCart();
+  const { user } = useAuth();
 
   return (
     <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
@@ -54,11 +56,19 @@ export const Header = ({ onCartClick }: HeaderProps) => {
               )}
             </Button>
             
-            <Link to="/auth">
-              <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground">
-                <User className="h-5 w-5" />
-              </Button>
-            </Link>
+            {user ? (
+              <Link to="/account">
+                <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground">
+                  <User className="h-5 w-5" />
+                </Button>
+              </Link>
+            ) : (
+              <Link to="/auth">
+                <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground">
+                  <User className="h-5 w-5" />
+                </Button>
+              </Link>
+            )}
           </div>
         </div>
       </div>
