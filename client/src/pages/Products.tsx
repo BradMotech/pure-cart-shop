@@ -26,7 +26,7 @@ const Products = () => {
       const { data, error } = await supabase
         .from("products")
         .select(
-          "id,name,price,category,image_url,colors,sizes,description"
+          "id,name,price,category,gender,image_url,colors,sizes,in_stock,is_on_sale,description"
         );
       if (error) throw error;
       return (data ?? []).map((p: any) => ({
@@ -34,9 +34,12 @@ const Products = () => {
         name: p.name,
         price: Number(p.price),
         category: p.category ?? "Uncategorized",
-        image: resolveImageUrl(p.image_url),
+        gender: p.gender ?? "Unisex",
+        image_url: resolveImageUrl(p.image_url),
         colors: (p.colors as string[] | null) ?? [],
         sizes: (p.sizes as string[] | null) ?? [],
+        in_stock: p.in_stock ?? true,
+        is_on_sale: p.is_on_sale ?? false,
         description: p.description ?? "",
       })) as Product[];
     },

@@ -53,7 +53,7 @@ export const ProductCard = ({ product }: { product: ExtendedProduct }) => {
       if (isWishlisted) {
         await removeFromWishlist(product.id);
       } else {
-        await addToWishlist(product.id);
+        await addToWishlist(product);
       }
     } catch (error) {
       console.error('Error toggling wishlist:', error);

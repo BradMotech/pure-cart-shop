@@ -37,7 +37,7 @@ export const CartSidebar = ({ isOpen, onClose }: CartSidebarProps) => {
                   <CardContent className="p-4">
                     <div className="flex items-center space-x-3">
                       <img
-                        src={item.image}
+                        src={item.image_url}
                         alt={item.name}
                         className="w-12 h-12 object-cover rounded"
                       />

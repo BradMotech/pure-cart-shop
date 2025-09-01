@@ -40,7 +40,7 @@ const Cart = () => {
                 <CardContent className="p-4">
                   <div className="flex items-center space-x-4">
                     <img
-                      src={item.image}
+                      src={item.image_url}
                       alt={item.name}
                       className="w-16 h-16 object-cover rounded"
                     />

@@ -43,9 +43,12 @@ export const WishlistProvider = ({ children }: { children: ReactNode }) => {
             name,
             price,
             category,
+            gender,
             image_url,
             colors,
             sizes,
+            in_stock,
+            is_on_sale,
             description
           )
         `)
@@ -58,9 +61,12 @@ export const WishlistProvider = ({ children }: { children: ReactNode }) => {
         name: item.products.name,
         price: Number(item.products.price),
         category: item.products.category ?? "Uncategorized",
-        image: resolveImageUrl(item.products.image_url),
+        gender: item.products.gender ?? "Unisex",
+        image_url: resolveImageUrl(item.products.image_url),
         colors: (item.products.colors as string[] | null) ?? [],
         sizes: (item.products.sizes as string[] | null) ?? [],
+        in_stock: item.products.in_stock ?? true,
+        is_on_sale: item.products.is_on_sale ?? false,
         description: item.products.description ?? "",
       })) as Product[];
     },
