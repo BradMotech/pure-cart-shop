@@ -37,21 +37,21 @@ export const ProductFilters = ({ products, onFilter }: ProductFiltersProps) => {
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Filters</CardTitle>
+    <Card className="border-border/50">
+      <CardHeader className="pb-4">
+        <CardTitle className="text-sm font-medium text-foreground">Filters</CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-6">
         <div>
-          <h3 className="font-medium mb-2">Category</h3>
-          <div className="space-y-2">
+          <h3 className="text-xs font-medium text-muted-foreground mb-3 uppercase tracking-wide">Category</h3>
+          <div className="space-y-1">
             {categories.map((category) => (
               <button
                 key={category}
-                className={`block w-full text-left px-3 py-2 rounded-md text-sm ${
+                className={`block w-full text-left px-3 py-2 rounded text-sm transition-colors ${
                   selectedCategory === category
-                    ? 'bg-primary text-primary-foreground'
-                    : 'hover:bg-muted'
+                    ? 'bg-foreground text-background'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
                 }`}
                 onClick={() => setSelectedCategory(category)}
               >
@@ -62,23 +62,23 @@ export const ProductFilters = ({ products, onFilter }: ProductFiltersProps) => {
         </div>
 
         <div>
-          <h3 className="font-medium mb-2">Price Range</h3>
+          <h3 className="text-xs font-medium text-muted-foreground mb-3 uppercase tracking-wide">Price Range</h3>
           <div className="space-y-2">
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-2 text-xs">
               <input
                 type="number"
                 placeholder="Min"
-                className="w-full px-3 py-2 border rounded-md"
+                className="w-full px-2 py-2 border border-border rounded text-xs bg-background text-foreground placeholder:text-muted-foreground"
                 value={priceRange.min}
                 onChange={(e) =>
                   setPriceRange(prev => ({ ...prev, min: Number(e.target.value) }))
                 }
               />
-              <span>-</span>
+              <span className="text-muted-foreground">-</span>
               <input
                 type="number"
                 placeholder="Max"
-                className="w-full px-3 py-2 border rounded-md"
+                className="w-full px-2 py-2 border border-border rounded text-xs bg-background text-foreground placeholder:text-muted-foreground"
                 value={priceRange.max}
                 onChange={(e) =>
                   setPriceRange(prev => ({ ...prev, max: Number(e.target.value) }))
@@ -89,8 +89,9 @@ export const ProductFilters = ({ products, onFilter }: ProductFiltersProps) => {
         </div>
 
         <Button
-          variant="outline"
-          className="w-full"
+          variant="ghost"
+          size="sm"
+          className="w-full text-xs text-muted-foreground hover:text-foreground"
           onClick={handleClearFilters}
         >
           Clear Filters

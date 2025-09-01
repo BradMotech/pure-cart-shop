@@ -14,28 +14,28 @@ export const Header = ({ onCartClick }: HeaderProps) => {
     <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
       <div className="container mx-auto px-4">
         <div className="flex h-16 items-center justify-between">
-          <Link to="/" className="text-2xl font-bold text-primary">
-            YW Store
+          <Link to="/" className="text-2xl font-bold text-foreground">
+            YW Clothing Store
           </Link>
           
-          <nav className="hidden md:flex items-center space-x-6">
-            <Link to="/" className="text-foreground/60 hover:text-foreground transition-colors">
+          <nav className="hidden md:flex items-center space-x-8">
+            <Link to="/" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
               Home
             </Link>
-            <Link to="/products" className="text-foreground/60 hover:text-foreground transition-colors">
+            <Link to="/products" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
               Products
             </Link>
-            <Link to="/about" className="text-foreground/60 hover:text-foreground transition-colors">
+            <Link to="/about" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
               About
             </Link>
-            <Link to="/contact" className="text-foreground/60 hover:text-foreground transition-colors">
+            <Link to="/contact" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
               Contact
             </Link>
           </nav>
 
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2">
             <Link to="/wishlist">
-              <Button variant="ghost" size="icon">
+              <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground">
                 <Heart className="h-5 w-5" />
               </Button>
             </Link>
@@ -43,7 +43,7 @@ export const Header = ({ onCartClick }: HeaderProps) => {
             <Button 
               variant="ghost" 
               size="icon" 
-              className="relative"
+              className="relative text-muted-foreground hover:text-foreground"
               onClick={onCartClick || (() => {})}
             >
               <ShoppingCart className="h-5 w-5" />
@@ -55,7 +55,7 @@ export const Header = ({ onCartClick }: HeaderProps) => {
             </Button>
             
             <Link to="/auth">
-              <Button variant="ghost" size="icon">
+              <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground">
                 <User className="h-5 w-5" />
               </Button>
             </Link>

@@ -33,11 +33,11 @@ export const PayfastButton = ({ totalAmount, onSuccess }: PayfastButtonProps) =>
 
   return (
     <Button 
-      className="w-full"
+      className="w-full bg-foreground text-background hover:bg-foreground/90 font-medium"
       onClick={handlePayment}
       disabled={isProcessing}
     >
-      {isProcessing ? "Processing..." : `Pay with Payfast - R${totalAmount}`}
+      {isProcessing ? "Processing Payment..." : `Pay with Payfast · R${totalAmount}`}
     </Button>
   );
 };

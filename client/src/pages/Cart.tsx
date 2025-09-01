@@ -34,53 +34,55 @@ const Cart = () => {
         <h1 className="text-3xl font-bold mb-8">Shopping Cart</h1>
         
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2 space-y-4">
+          <div className="lg:col-span-2 space-y-3">
             {items.map((item) => (
-              <Card key={`${item.id}-${item.color}-${item.size}`}>
-                <CardContent className="p-6">
+              <Card key={`${item.id}-${item.color}-${item.size}`} className="border-border/50">
+                <CardContent className="p-4">
                   <div className="flex items-center space-x-4">
                     <img
                       src={item.image}
                       alt={item.name}
-                      className="w-20 h-20 object-cover rounded-md"
+                      className="w-16 h-16 object-cover rounded"
                     />
                     
                     <div className="flex-1">
-                      <h3 className="font-semibold text-lg">{item.name}</h3>
-                      <p className="text-muted-foreground">
-                        Color: {item.color} | Size: {item.size}
+                      <h3 className="font-medium text-foreground">{item.name}</h3>
+                      <p className="text-xs text-muted-foreground uppercase tracking-wide">
+                        {item.color} · {item.size}
                       </p>
-                      <p className="font-bold text-primary">R{item.price}</p>
+                      <p className="font-semibold text-foreground mt-1">R{item.price}</p>
                     </div>
                     
                     <div className="flex items-center space-x-2">
                       <Button
-                        variant="outline"
+                        variant="ghost"
                         size="icon"
+                        className="h-8 w-8 text-muted-foreground hover:text-foreground"
                         onClick={() => updateQuantity(item.id, item.color, item.size, Math.max(0, item.quantity - 1))}
                       >
-                        <Minus className="h-4 w-4" />
+                        <Minus className="h-3 w-3" />
                       </Button>
                       
-                      <span className="w-12 text-center font-semibold">
+                      <span className="w-8 text-center font-medium text-sm">
                         {item.quantity}
                       </span>
                       
                       <Button
-                        variant="outline"
+                        variant="ghost"
                         size="icon"
+                        className="h-8 w-8 text-muted-foreground hover:text-foreground"
                         onClick={() => updateQuantity(item.id, item.color, item.size, item.quantity + 1)}
                       >
-                        <Plus className="h-4 w-4" />
+                        <Plus className="h-3 w-3" />
                       </Button>
                       
                       <Button
-                        variant="outline"
+                        variant="ghost"
                         size="icon"
-                        className="ml-4 text-destructive hover:text-destructive"
+                        className="ml-2 h-8 w-8 text-muted-foreground hover:text-red-500"
                         onClick={() => removeFromCart(item.id, item.color, item.size)}
                       >
-                        <Trash2 className="h-4 w-4" />
+                        <Trash2 className="h-3 w-3" />
                       </Button>
                     </div>
                   </div>
@@ -90,21 +92,21 @@ const Cart = () => {
           </div>
           
           <div className="lg:col-span-1">
-            <Card className="sticky top-4">
+            <Card className="sticky top-4 border-border/50">
               <CardContent className="p-6">
-                <h2 className="text-xl font-bold mb-4">Order Summary</h2>
+                <h2 className="font-semibold mb-6 text-foreground">Order Summary</h2>
                 
-                <div className="space-y-2 mb-4">
-                  <div className="flex justify-between">
+                <div className="space-y-3 mb-6 text-sm">
+                  <div className="flex justify-between text-muted-foreground">
                     <span>Subtotal:</span>
                     <span>R{getCartTotal()}</span>
                   </div>
-                  <div className="flex justify-between">
+                  <div className="flex justify-between text-muted-foreground">
                     <span>Shipping:</span>
                     <span>Free</span>
                   </div>
-                  <hr className="my-2" />
-                  <div className="flex justify-between font-bold text-lg">
+                  <hr className="my-4 border-border" />
+                  <div className="flex justify-between font-semibold text-foreground">
                     <span>Total:</span>
                     <span>R{getCartTotal()}</span>
                   </div>

@@ -33,43 +33,43 @@ export const ProductCard = ({ product }: ProductCardProps) => {
   };
 
   return (
-    <Card className="group hover:shadow-lg transition-shadow duration-300">
+    <Card className="group hover:shadow-md transition-all duration-300 border-border/50">
       <CardContent className="p-4">
-        <div className="relative overflow-hidden rounded-lg mb-4">
+        <div className="relative overflow-hidden rounded-md mb-4">
           <img
             src={product.image}
             alt={product.name}
-            className="w-full h-64 object-cover transition-transform duration-300 group-hover:scale-105"
+            className="w-full h-64 object-cover transition-transform duration-300 group-hover:scale-102"
           />
           <Button
             variant="ghost"
             size="icon"
-            className={`absolute top-2 right-2 ${
-              inWishlist ? 'text-red-500' : 'text-gray-500'
+            className={`absolute top-2 right-2 bg-background/80 backdrop-blur-sm ${
+              inWishlist ? 'text-red-500 hover:text-red-600' : 'text-muted-foreground hover:text-foreground'
             }`}
             onClick={handleWishlistToggle}
           >
-            <Heart className={`h-5 w-5 ${inWishlist ? 'fill-current' : ''}`} />
+            <Heart className={`h-4 w-4 ${inWishlist ? 'fill-current' : ''}`} />
           </Button>
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-3">
           <div>
-            <h3 className="font-semibold text-lg">{product.name}</h3>
-            <p className="text-muted-foreground">{product.category}</p>
-            <p className="text-2xl font-bold text-primary">R{product.price}</p>
+            <h3 className="font-medium text-foreground">{product.name}</h3>
+            <p className="text-xs text-muted-foreground uppercase tracking-wide">{product.category}</p>
+            <p className="text-lg font-semibold text-foreground mt-1">R{product.price}</p>
           </div>
 
           <div>
-            <p className="text-sm font-medium mb-2">Color:</p>
-            <div className="flex space-x-2">
+            <p className="text-xs font-medium text-muted-foreground mb-2">COLOR</p>
+            <div className="flex space-x-1">
               {product.colors.map((color) => (
                 <button
                   key={color}
-                  className={`px-3 py-1 rounded-md text-sm border ${
+                  className={`px-2 py-1 rounded text-xs border transition-colors ${
                     selectedColor === color
-                      ? 'border-primary bg-primary text-primary-foreground'
-                      : 'border-border'
+                      ? 'border-foreground bg-foreground text-background'
+                      : 'border-border text-muted-foreground hover:border-muted-foreground'
                   }`}
                   onClick={() => setSelectedColor(color)}
                 >
@@ -80,15 +80,15 @@ export const ProductCard = ({ product }: ProductCardProps) => {
           </div>
 
           <div>
-            <p className="text-sm font-medium mb-2">Size:</p>
-            <div className="flex space-x-2">
+            <p className="text-xs font-medium text-muted-foreground mb-2">SIZE</p>
+            <div className="flex space-x-1">
               {product.sizes.map((size) => (
                 <button
                   key={size}
-                  className={`px-3 py-1 rounded-md text-sm border ${
+                  className={`px-2 py-1 rounded text-xs border transition-colors ${
                     selectedSize === size
-                      ? 'border-primary bg-primary text-primary-foreground'
-                      : 'border-border'
+                      ? 'border-foreground bg-foreground text-background'
+                      : 'border-border text-muted-foreground hover:border-muted-foreground'
                   }`}
                   onClick={() => setSelectedSize(size)}
                 >
@@ -98,31 +98,36 @@ export const ProductCard = ({ product }: ProductCardProps) => {
             </div>
           </div>
 
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center justify-between pt-2">
+            <div className="flex items-center space-x-1">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                onClick={() => setQuantity(Math.max(1, quantity - 1))}
+              >
+                <Minus className="h-3 w-3" />
+              </Button>
+              <span className="w-8 text-center text-sm">{quantity}</span>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                onClick={() => setQuantity(quantity + 1)}
+              >
+                <Plus className="h-3 w-3" />
+              </Button>
+            </div>
+
             <Button
-              variant="outline"
-              size="icon"
-              onClick={() => setQuantity(Math.max(1, quantity - 1))}
+              size="sm"
+              className="bg-foreground text-background hover:bg-foreground/90 text-xs"
+              onClick={handleAddToCart}
             >
-              <Minus className="h-4 w-4" />
-            </Button>
-            <span className="w-12 text-center">{quantity}</span>
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => setQuantity(quantity + 1)}
-            >
-              <Plus className="h-4 w-4" />
+              <ShoppingCart className="h-3 w-3 mr-1" />
+              Add
             </Button>
           </div>
-
-          <Button
-            className="w-full"
-            onClick={handleAddToCart}
-          >
-            <ShoppingCart className="h-4 w-4 mr-2" />
-            Add to Cart
-          </Button>
         </div>
       </CardContent>
     </Card>
