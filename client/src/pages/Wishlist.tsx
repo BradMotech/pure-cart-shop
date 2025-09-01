@@ -58,7 +58,12 @@ export default function Wishlist() {
         variant: "destructive"
       });
     } else {
-      setWishlistItems(data || []);
+      // Transform the data to match WishlistItem interface
+      const wishlistData = (data || []).map((item: any) => ({
+        id: item.id,
+        product: Array.isArray(item.product) ? item.product[0] : item.product
+      }));
+      setWishlistItems(wishlistData);
     }
     
     setLoadingWishlist(false);

@@ -52,7 +52,9 @@ app.use((req, res, next) => {
   // setting up all the other routes so the catch-all route
   // doesn't interfere with the other routes
   if (process.env.NODE_ENV === "development") {
-    await setupVite(app);
+    const { createServer } = await import("http");
+    const server = createServer(app);
+    await setupVite(app, server);
   } else {
     serveStatic(app);
   }

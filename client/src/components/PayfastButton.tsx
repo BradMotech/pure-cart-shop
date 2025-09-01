@@ -120,8 +120,8 @@ export const PayfastButton = ({ totalAmount, onSuccess }: PayfastButtonProps) =>
       form.submit();
       document.body.removeChild(form);
 
-      // Clear cart after successful submission
-      clearCart();
+      // Note: Cart will be cleared only after payment confirmation
+      // The clearCart() should be called from a payment success callback or webhook
       
       if (onSuccess) {
         onSuccess();
