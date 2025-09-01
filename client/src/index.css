@@ -1,0 +1,91 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Primary Colors - Professional Business Theme */
+  --primary: 210 100% 50%; /* Vibrant Blue */
+  --primary-foreground: 0 0% 100%;
+  --primary-glow: 210 100% 65%;
+
+  /* Secondary Colors */
+  --secondary: 220 20% 96%;
+  --secondary-foreground: 220 20% 10%;
+
+  /* Accent Colors */
+  --accent: 210 100% 95%;
+  --accent-foreground: 210 100% 15%;
+
+  /* Neutral Colors */
+  --background: 0 0% 100%;
+  --foreground: 220 20% 10%;
+  --card: 0 0% 100%;
+  --card-foreground: 220 20% 10%;
+  --border: 220 20% 90%;
+  --input: 220 20% 96%;
+  --ring: 210 100% 50%;
+
+  /* Muted Colors */
+  --muted: 220 20% 96%;
+  --muted-foreground: 220 20% 45%;
+
+  /* Destructive Colors */
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 100%;
+
+  /* Chart Colors */
+  --chart-1: 210 100% 50%;
+  --chart-2: 160 100% 40%;
+  --chart-3: 30 100% 50%;
+  --chart-4: 280 100% 50%;
+  --chart-5: 340 100% 50%;
+
+  /* Gradients */
+  --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)));
+  --gradient-secondary: linear-gradient(180deg, hsl(var(--background)), hsl(var(--secondary)));
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+
+  /* Animations */
+  --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.dark {
+  --background: 220 20% 5%;
+  --foreground: 220 20% 95%;
+  --card: 220 20% 8%;
+  --card-foreground: 220 20% 95%;
+  --popover: 220 20% 8%;
+  --popover-foreground: 220 20% 95%;
+  --primary: 210 100% 60%;
+  --primary-foreground: 220 20% 5%;
+  --secondary: 220 20% 12%;
+  --secondary-foreground: 220 20% 90%;
+  --muted: 220 20% 12%;
+  --muted-foreground: 220 20% 60%;
+  --accent: 220 20% 12%;
+  --accent-foreground: 220 20% 90%;
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 220 20% 15%;
+  --input: 220 20% 12%;
+  --ring: 210 100% 60%;
+}
+
+* {
+  border-color: hsl(var(--border));
+}
+
+body {
+  color: hsl(var(--foreground));
+  background: hsl(var(--background));
+  font-family: "Inter", sans-serif;
+  font-feature-settings: "cv11", "ss01";
+  font-variation-settings: "opsz" 32;
+}
