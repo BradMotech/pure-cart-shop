@@ -1,5 +1,5 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { Md5 } from "https://deno.land/std@0.190.0/hash/md5.ts";
+import { md5 } from "https://deno.land/x/checksum@1.4.0/md5.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -23,21 +23,21 @@ serve(async (req) => {
     // PayFast sandbox credentials (demo)
     const merchantId = "10000100";
     const merchantKey = "46f0cd694581a";
-    const passPhrase = ""; // Leave empty unless you have set one in PayFast dashboard
+    const passPhrase = ""; // Leave empty unless you've set a passphrase in PayFast
 
     const origin = req.headers.get("origin") || "http://localhost:5173";
 
-    // Build PayFast data
     const paymentData: Record<string, string> = {
       merchant_id: merchantId,
       merchant_key: merchantKey,
       return_url: `${origin}/payment-success?order_id=${orderId}`,
       cancel_url: `${origin}/cart`,
-      notify_url: `${origin}/api/payfast-notify`,
+      // Use public Edge Function URL so PayFast can reach it
+      notify_url: `https://tindaknujaloljfthmum.supabase.co/functions/v1/payfast-notify`,
       name_first: "Customer",
       name_last: "Name",
       email_address: "customer@example.com",
-      m_payment_id: orderId,
+      m_payment_id: String(orderId),
       amount: Number(planPrice).toFixed(2),
       item_name: planName || "Order Payment",
       item_description: `Payment for ${orderItems?.length || 1} item(s)`,
@@ -45,7 +45,7 @@ serve(async (req) => {
       custom_str1: String(orderId),
     };
 
-    // Generate signature (MD5) if passphrase is set
+    // Optional: Generate MD5 signature if you have a passphrase configured
     const generateSignature = (data: Record<string, string>, passphrase = "") => {
       const keys = Object.keys(data)
         .filter((k) => k !== "signature" && data[k] !== "" && data[k] !== undefined && data[k] !== null)
@@ -53,10 +53,10 @@ serve(async (req) => {
       const paramString = keys
         .map((k) => `${k}=${encodeURIComponent(String(data[k]).trim()).replace(/%20/g, "+")}`)
         .join("&");
-      const stringToHash = passphrase ? `${paramString}&passphrase=${encodeURIComponent(passphrase.trim()).replace(/%20/g, "+")}` : paramString;
-      const md5 = new Md5();
-      md5.update(stringToHash);
-      return md5.toString();
+      const stringToHash = passphrase
+        ? `${paramString}&passphrase=${encodeURIComponent(passphrase.trim()).replace(/%20/g, "+")}`
+        : paramString;
+      return md5(stringToHash);
     };
 
     if (passPhrase) {
