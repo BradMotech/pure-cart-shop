@@ -24,11 +24,15 @@ export const ProductCard = ({ product }: ProductCardProps) => {
     addToCart(product, selectedColor, selectedSize, quantity);
   };
 
-  const handleWishlistToggle = () => {
-    if (inWishlist) {
-      removeFromWishlist(product.id);
-    } else {
-      addToWishlist(product);
+  const handleWishlistToggle = async () => {
+    try {
+      if (inWishlist) {
+        await removeFromWishlist(product.id);
+      } else {
+        await addToWishlist(product);
+      }
+    } catch (error) {
+      console.error('Wishlist error:', error);
     }
   };
 

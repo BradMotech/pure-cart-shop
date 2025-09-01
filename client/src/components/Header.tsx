@@ -4,11 +4,7 @@ import { Link } from "react-router-dom";
 import { useCart } from "@/contexts/CartContext";
 import { useAuth } from "@/contexts/AuthContext";
 
-interface HeaderProps {
-  onCartClick?: () => void;
-}
-
-export const Header = ({ onCartClick }: HeaderProps) => {
+export const Header = () => {
   const { getTotalItems } = useCart();
   const { user } = useAuth();
 
@@ -27,12 +23,6 @@ export const Header = ({ onCartClick }: HeaderProps) => {
             <Link to="/products" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
               Products
             </Link>
-            <Link to="/about" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-              About
-            </Link>
-            <Link to="/contact" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-              Contact
-            </Link>
           </nav>
 
           <div className="flex items-center space-x-2">
@@ -42,19 +32,20 @@ export const Header = ({ onCartClick }: HeaderProps) => {
               </Button>
             </Link>
             
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              className="relative text-muted-foreground hover:text-foreground"
-              onClick={onCartClick || (() => {})}
-            >
-              <ShoppingCart className="h-5 w-5" />
-              {getTotalItems() > 0 && (
-                <span className="absolute -top-2 -right-2 bg-primary text-primary-foreground rounded-full text-xs w-5 h-5 flex items-center justify-center">
-                  {getTotalItems()}
-                </span>
-              )}
-            </Button>
+            <Link to="/cart">
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="relative text-muted-foreground hover:text-foreground"
+              >
+                <ShoppingCart className="h-5 w-5" />
+                {getTotalItems() > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-primary text-primary-foreground rounded-full text-xs w-5 h-5 flex items-center justify-center">
+                    {getTotalItems()}
+                  </span>
+                )}
+              </Button>
+            </Link>
             
             {user ? (
               <Link to="/account">

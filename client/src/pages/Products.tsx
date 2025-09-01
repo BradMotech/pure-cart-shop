@@ -3,13 +3,11 @@ import { Header } from "@/components/Header";
 import { ProductCard } from "@/components/ProductCard";
 import { ProductFilters } from "@/components/ProductFilters";
 import { Product } from "@/types/product";
-import { useCart } from "@/contexts/CartContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 
-const Index = () => {
+const Products = () => {
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
-  const { items } = useCart();
 
   const resolveImageUrl = (image_url: string | null) => {
     if (image_url && image_url.startsWith("http")) return image_url;
@@ -47,6 +45,19 @@ const Index = () => {
   useEffect(() => {
     setFilteredProducts(dbProducts);
   }, [dbProducts]);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <div className="container mx-auto px-4 py-16 text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-foreground mx-auto mb-4"></div>
+          <p>Loading products...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -54,10 +65,10 @@ const Index = () => {
       <main className="container mx-auto px-4 py-8">
         <div className="mb-8">
           <h1 className="text-4xl font-bold mb-4 text-foreground">
-            YW Clothing Store
+            All Products
           </h1>
           <p className="text-muted-foreground text-lg">
-            Discover premium unisex apparel designed for style and comfort
+            Browse our complete collection of premium apparel
           </p>
         </div>
 
@@ -76,7 +87,7 @@ const Index = () => {
               ))}
             </div>
 
-            {filteredProducts.length === 0 && (
+            {filteredProducts.length === 0 && !isLoading && (
               <div className="text-center py-12">
                 <p className="text-muted-foreground text-lg">
                   No products found matching your filters.
@@ -90,4 +101,4 @@ const Index = () => {
   );
 };
 
-export default Index;
+export default Products;
