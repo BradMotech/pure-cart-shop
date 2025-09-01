@@ -3,15 +3,52 @@ import { Header } from "@/components/Header";
 import { ProductCard } from "@/components/ProductCard";
 import { ProductFilters } from "@/components/ProductFilters";
 import { CartSidebar } from "@/components/CartSidebar";
-import { products } from "@/data/products";
 import { Product } from "@/types/product";
 import { useCart } from "@/contexts/CartContext";
+import { supabase } from "@/integrations/supabase/client";
+import { useQuery } from "@tanstack/react-query";
 
 const Index = () => {
   const [isCartOpen, setIsCartOpen] = useState(false);
-  const [filteredProducts, setFilteredProducts] = useState<Product[]>(products);
+  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const { items } = useCart();
 
+  const resolveImageUrl = (image_url: string | null) => {
+    if (image_url && image_url.startsWith("http")) return image_url;
+    if (image_url) {
+      const { data } = supabase.storage
+        .from("product-images")
+        .getPublicUrl(image_url);
+      return data.publicUrl;
+    }
+    return "/placeholder.svg";
+  };
+
+  const { data: dbProducts = [], isLoading, error } = useQuery({
+    queryKey: ["products"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("products")
+        .select(
+          "id,name,price,category,image_url,colors,sizes,description"
+        );
+      if (error) throw error;
+      return (data ?? []).map((p: any) => ({
+        id: p.id,
+        name: p.name,
+        price: Number(p.price),
+        category: p.category ?? "Uncategorized",
+        image: resolveImageUrl(p.image_url),
+        colors: (p.colors as string[] | null) ?? [],
+        sizes: (p.sizes as string[] | null) ?? [],
+        description: p.description ?? "",
+      })) as Product[];
+    },
+  });
+
+  useEffect(() => {
+    setFilteredProducts(dbProducts);
+  }, [dbProducts]);
   return (
     <div className="min-h-screen bg-background">
       <Header onCartClick={() => setIsCartOpen(true)} />
@@ -29,7 +66,7 @@ const Index = () => {
         <div className="flex flex-col lg:flex-row gap-8">
           <aside className="lg:w-1/4">
             <ProductFilters 
-              products={products}
+              products={dbProducts}
               onFilter={setFilteredProducts}
             />
           </aside>
