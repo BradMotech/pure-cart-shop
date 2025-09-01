@@ -20,7 +20,10 @@ export const PaymentDialog = ({ isOpen, onClose, totalAmount }: PaymentDialogPro
   const { user } = useAuth();
 
   const handlePayFastPayment = async () => {
+    console.log('PayFast payment started');
+    
     if (!user) {
+      console.log('No user found');
       toast({
         title: "Authentication Required",
         description: "Please sign in to complete your purchase",
@@ -30,6 +33,7 @@ export const PaymentDialog = ({ isOpen, onClose, totalAmount }: PaymentDialogPro
     }
 
     if (items.length === 0) {
+      console.log('Cart is empty');
       toast({
         title: "Empty Cart",
         description: "Please add items to your cart before checking out",
@@ -41,6 +45,7 @@ export const PaymentDialog = ({ isOpen, onClose, totalAmount }: PaymentDialogPro
     setIsProcessing(true);
     
     try {
+      console.log('Creating order...');
       // Create order in Supabase first
       const { data: order, error: orderError } = await supabase
         .from('orders')
@@ -52,7 +57,12 @@ export const PaymentDialog = ({ isOpen, onClose, totalAmount }: PaymentDialogPro
         .select()
         .single();
 
-      if (orderError) throw orderError;
+      if (orderError) {
+        console.error('Order creation error:', orderError);
+        throw orderError;
+      }
+
+      console.log('Order created:', order);
 
       // Create order items
       const orderItems = items.map(item => ({
@@ -64,12 +74,18 @@ export const PaymentDialog = ({ isOpen, onClose, totalAmount }: PaymentDialogPro
         selected_size: item.size,
       }));
 
+      console.log('Creating order items:', orderItems);
+
       const { error: itemsError } = await supabase
         .from('order_items')
         .insert(orderItems);
 
-      if (itemsError) throw itemsError;
+      if (itemsError) {
+        console.error('Order items error:', itemsError);
+        throw itemsError;
+      }
 
+      console.log('Calling PayFast edge function...');
       // Call PayFast edge function
       const { data, error } = await supabase.functions.invoke('payfast-payment', {
         body: {
@@ -81,11 +97,15 @@ export const PaymentDialog = ({ isOpen, onClose, totalAmount }: PaymentDialogPro
         }
       });
 
+      console.log('PayFast function response:', { data, error });
+
       if (error) {
+        console.error('PayFast function error:', error);
         throw error;
       }
 
-      if (data.success && data.paymentData) {
+      if (data?.success && data?.paymentData) {
+        console.log('Creating form for PayFast redirect...');
         // Create and submit form to PayFast
         const form = document.createElement('form');
         form.method = 'POST';
@@ -103,6 +123,7 @@ export const PaymentDialog = ({ isOpen, onClose, totalAmount }: PaymentDialogPro
         });
 
         document.body.appendChild(form);
+        console.log('Submitting form to PayFast...');
         form.submit();
         document.body.removeChild(form);
         
@@ -113,11 +134,13 @@ export const PaymentDialog = ({ isOpen, onClose, totalAmount }: PaymentDialogPro
 
         onClose();
       } else {
+        console.error('Invalid PayFast response:', data);
         throw new Error("Failed to initialize PayFast payment");
       }
 
     } catch (error) {
       console.error('PayFast payment error:', error);
+      alert(`Payment Error: ${(error as Error).message || "Failed to initialize payment. Please try again."}`);
       toast({
         title: "Payment Error",
         description: (error as Error).message || "Failed to initialize payment. Please try again.",
