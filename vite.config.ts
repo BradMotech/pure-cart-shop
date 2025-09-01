@@ -3,11 +3,11 @@ import react from "@vitejs/plugin-react";
 import path from "path";
 import runtimeErrorOverlay from "@replit/vite-plugin-runtime-error-modal";
 
-export default defineConfig(({ mode }) => ({
+export default defineConfig({
   plugins: [
     react(),
     runtimeErrorOverlay(),
-  ].filter(Boolean),
+  ],
   resolve: {
     alias: {
       "@": path.resolve(import.meta.dirname, "client", "src"),
@@ -17,11 +17,11 @@ export default defineConfig(({ mode }) => ({
   },
   root: path.resolve(import.meta.dirname, "client"),
   server: {
-    host: "::",
     port: 8080,
+    host: true,
   },
   build: {
     outDir: path.resolve(import.meta.dirname, "dist/public"),
     emptyOutDir: true,
   },
-}));
+});
