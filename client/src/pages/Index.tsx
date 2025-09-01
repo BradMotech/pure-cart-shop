@@ -27,20 +27,19 @@ const Index = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("products")
-        .select(
-          "id,name,price,category,image_url,colors,sizes,description"
-        );
+        .select(`
+          *,
+          product_images (
+            id,
+            image_url,
+            is_primary,
+            sort_order
+          )
+        `)
+        .order('created_at', { ascending: false });
+        
       if (error) throw error;
-      return (data ?? []).map((p: any) => ({
-        id: p.id,
-        name: p.name,
-        price: Number(p.price),
-        category: p.category ?? "Uncategorized",
-        image: resolveImageUrl(p.image_url),
-        colors: (p.colors as string[] | null) ?? [],
-        sizes: (p.sizes as string[] | null) ?? [],
-        description: p.description ?? "",
-      })) as Product[];
+      return data ?? [];
     },
   });
 
