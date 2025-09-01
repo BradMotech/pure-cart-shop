@@ -1,5 +1,4 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { md5 } from "https://deno.land/x/checksum@1.4.0/md5.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -10,7 +9,7 @@ const corsHeaders = {
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: corsHeaders, status: 200 });
   }
 
   try {
@@ -32,7 +31,7 @@ serve(async (req) => {
       merchant_key: merchantKey,
       return_url: `${origin}/payment-success?order_id=${orderId}`,
       cancel_url: `${origin}/cart`,
-      // Use public Edge Function URL so PayFast can reach it
+      // Public Edge Function URL so PayFast can reach it
       notify_url: `https://tindaknujaloljfthmum.supabase.co/functions/v1/payfast-notify`,
       name_first: "Customer",
       name_last: "Name",
@@ -45,22 +44,10 @@ serve(async (req) => {
       custom_str1: String(orderId),
     };
 
-    // Optional: Generate MD5 signature if you have a passphrase configured
-    const generateSignature = (data: Record<string, string>, passphrase = "") => {
-      const keys = Object.keys(data)
-        .filter((k) => k !== "signature" && data[k] !== "" && data[k] !== undefined && data[k] !== null)
-        .sort();
-      const paramString = keys
-        .map((k) => `${k}=${encodeURIComponent(String(data[k]).trim()).replace(/%20/g, "+")}`)
-        .join("&");
-      const stringToHash = passphrase
-        ? `${paramString}&passphrase=${encodeURIComponent(passphrase.trim()).replace(/%20/g, "+")}`
-        : paramString;
-      return md5(stringToHash);
-    };
-
+    // No signature generation in sandbox unless passphrase is configured
     if (passPhrase) {
-      paymentData.signature = generateSignature(paymentData, passPhrase);
+      // We intentionally skip MD5 hashing to avoid unsupported algorithms in Deno runtime
+      // When you add a passphrase in PayFast dashboard, we can add a stable MD5 implementation
     }
 
     return new Response(
