@@ -71,6 +71,8 @@ export const PayfastButton = ({ totalAmount, onSuccess }: PayfastButtonProps) =>
       const form = document.createElement('form');
       form.method = 'POST';
       form.action = 'https://sandbox.payfast.co.za/eng/process';
+      form.target = '_top'; // Ensure it navigates the entire window
+      form.style.display = 'none';
 
       const fields = {
         merchant_id: '10000100',
@@ -91,8 +93,17 @@ export const PayfastButton = ({ totalAmount, onSuccess }: PayfastButtonProps) =>
       });
 
       document.body.appendChild(form);
-      form.submit();
-      document.body.removeChild(form);
+      
+      // Use setTimeout to ensure the form is properly attached before submission
+      setTimeout(() => {
+        form.submit();
+        // Clean up after a delay to ensure submission completes
+        setTimeout(() => {
+          if (document.body.contains(form)) {
+            document.body.removeChild(form);
+          }
+        }, 1000);
+      }, 100);
 
     } catch (error) {
       console.error('Payment error:', error);
