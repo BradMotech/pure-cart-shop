@@ -90,10 +90,7 @@ export const PaymentDialog = ({ isOpen, onClose, totalAmount }: PaymentDialogPro
         const form = document.createElement('form');
         form.method = 'POST';
         form.action = data.paymentUrl;
-        // Don't use _blank on mobile to avoid popup blocking issues
-        if (window.innerWidth >= 768) {
-          form.target = '_blank'; // Open in new window on desktop only
-        }
+        form.target = '_top'; // Ensure navigation escapes preview iframe
         form.style.display = 'none';
 
         // Add all payment data as hidden fields

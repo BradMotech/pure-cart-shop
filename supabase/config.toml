@@ -48,3 +48,6 @@ enable_confirmations = false
 
 [functions.payfast-payment]
 verify_jwt = false
+
+[functions.payfast-notify]
+verify_jwt = false
