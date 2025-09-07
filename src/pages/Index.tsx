@@ -28,6 +28,14 @@ const Index = () => {
   const fetchProducts = async () => {
     try {
       console.log('🔄 Starting to fetch products from Supabase...');
+      console.log('🔗 Supabase client:', supabase);
+      
+      // Test basic connection first
+      const { data: testData, error: testError } = await supabase
+        .from('products')
+        .select('count', { count: 'exact', head: true });
+      
+      console.log('🧪 Connection test:', { testData, testError });
       
       const { data, error } = await supabase
         .from('products')
@@ -43,7 +51,12 @@ const Index = () => {
       });
       
       if (error) {
-        console.error('❌ Supabase error details:', error);
+        console.error('❌ Supabase error details:', {
+          message: error.message,
+          details: error.details,
+          hint: error.hint,
+          code: error.code
+        });
         setProducts([]);
         return;
       }
@@ -82,7 +95,11 @@ const Index = () => {
       
       setProducts(transformedProducts);
     } catch (error) {
-      console.error('💥 Catch block error:', error);
+      console.error('💥 Catch block error:', {
+        error,
+        message: error?.message,
+        stack: error?.stack
+      });
       setProducts([]);
     } finally {
       console.log('🏁 Fetch products completed, setting loading to false');
