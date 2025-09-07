@@ -103,32 +103,43 @@ const Index = () => {
           onSortChange={setSortBy}
         />
 
-        {loading ? (
-          <Loader size="lg" text="Loading products..." />
-        ) : (
-          <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-              {filteredProducts.map((product) => (
-                <ProductCard key={product.id} product={product} />
-              ))}
-            </div>
-
-            {filteredProducts.length === 0 && !loading && (
-              <div className="text-center py-12">
-                <div className="space-y-4">
-                  <p className="text-gray-600">No products found.</p>
-                  <p className="text-sm text-gray-500">Make sure you have products in your Supabase database.</p>
-                  <Button 
-                    onClick={() => window.location.href = '/admin'}
-                    variant="outline"
-                    className="border-black text-black hover:bg-black hover:text-white"
-                  >
-                    Add Products (Admin)
-                  </Button>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+          {loading ? (
+            // Show skeleton cards while loading
+            Array.from({ length: 8 }).map((_, index) => (
+              <div key={index} className="bg-white border border-gray-200 rounded-lg overflow-hidden animate-pulse">
+                <div className="w-full h-64 bg-gray-200"></div>
+                <div className="p-4 space-y-3">
+                  <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                  <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                  <div className="flex justify-between items-center">
+                    <div className="h-4 bg-gray-200 rounded w-1/4"></div>
+                    <div className="h-8 bg-gray-200 rounded w-1/3"></div>
+                  </div>
                 </div>
               </div>
-            )}
-          </>
+            ))
+          ) : (
+            filteredProducts.map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))
+          )}
+        </div>
+
+        {filteredProducts.length === 0 && !loading && (
+          <div className="text-center py-12">
+            <div className="space-y-4">
+              <p className="text-gray-600">No products found.</p>
+              <p className="text-sm text-gray-500">Make sure you have products in your Supabase database.</p>
+              <Button 
+                onClick={() => window.location.href = '/admin'}
+                variant="outline"
+                className="border-black text-black hover:bg-black hover:text-white"
+              >
+                Add Products (Admin)
+              </Button>
+            </div>
+          </div>
         )}
       </main>
 
