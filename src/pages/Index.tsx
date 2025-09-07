@@ -16,9 +16,9 @@ const Index = () => {
 
   const categories = [
     { id: 'all', name: 'All Products', count: products.length },
-    { id: 'tops', name: 'Tops', count: products.filter(p => p.category === 'Tops').length },
-    { id: 'headwear', name: 'Headwear', count: products.filter(p => p.category === 'Headwear').length },
-    { id: 'bottoms', name: 'Bottoms', count: products.filter(p => p.category === 'Bottoms').length },
+    { id: 'tops', name: 'Tops', count: products.filter(p => p.category?.toLowerCase().includes('shirt') || p.category?.toLowerCase() === 'tops').length },
+    { id: 'headwear', name: 'Headwear', count: products.filter(p => p.category?.toLowerCase() === 'headwear').length },
+    { id: 'bottoms', name: 'Bottoms', count: products.filter(p => p.category?.toLowerCase() === 'bottoms').length },
   ];
 
   useEffect(() => {
@@ -26,22 +26,15 @@ const Index = () => {
   }, []);
 
   const fetchProducts = async () => {
-    try {
-      console.log('Fetching products from Supabase...');
-      
-      // Check if we can connect to Supabase first
+    try {      
       const { data, error } = await supabase
         .from('products')
         .select('*')
         .limit(50);
-
-      console.log('Supabase response:', { data, error, count: data?.length });
       
       if (error) {
-        console.error('Supabase error details:', error);
-        // If the table doesn't exist or we have no access, show empty state
+        console.error('Supabase error:', error);
         setProducts([]);
-        setLoading(false);
         return;
       }
       
@@ -63,21 +56,23 @@ const Index = () => {
         updated_at: product.updated_at || undefined
       }));
       
-      console.log('Transformed products:', transformedProducts.length, 'products');
       setProducts(transformedProducts);
     } catch (error) {
       console.error('Error fetching products:', error);
-      setProducts([]); // Set empty array on error
+      setProducts([]);
     } finally {
       setLoading(false);
     }
   };
 
   const filteredProducts = products
-    .filter(product => 
-      selectedCategory === 'all' || 
-      product.category.toLowerCase() === selectedCategory
-    )
+    .filter(product => {
+      if (selectedCategory === 'all') return true;
+      if (selectedCategory === 'tops') return product.category?.toLowerCase().includes('shirt') || product.category?.toLowerCase() === 'tops';
+      if (selectedCategory === 'bottoms') return product.category?.toLowerCase() === 'bottoms';
+      if (selectedCategory === 'headwear') return product.category?.toLowerCase() === 'headwear';
+      return product.category?.toLowerCase() === selectedCategory;
+    })
     .sort((a, b) => {
       switch (sortBy) {
         case 'price-low':
