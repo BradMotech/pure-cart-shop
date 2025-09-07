@@ -47,7 +47,19 @@ export default function Wishlist() {
       .from('wishlist')
       .select(`
         id,
-        product:products(*)
+        products (
+          id,
+          name,
+          price,
+          original_price,
+          image_url,
+          colors,
+          in_stock,
+          is_on_sale,
+          category,
+          gender,
+          description
+        )
       `)
       .eq('user_id', user.id);
 
@@ -58,7 +70,13 @@ export default function Wishlist() {
         variant: "destructive"
       });
     } else {
-      setWishlistItems(data || []);
+      // Transform the data to match our interface
+      const transformedData = (data || []).map(item => ({
+        id: item.id,
+        product: item.products as any
+      })).filter(item => item.product); // Filter out items where product is null
+      
+      setWishlistItems(transformedData);
     }
     
     setLoadingWishlist(false);

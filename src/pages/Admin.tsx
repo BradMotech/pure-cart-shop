@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Select,
   SelectContent,
@@ -35,9 +36,36 @@ interface DatabaseProduct {
   updated_at?: string | null;
 }
 
+interface Order {
+  id: string;
+  user_id: string;
+  total_amount: number;
+  status: string;
+  payment_id: string | null;
+  created_at: string;
+  updated_at: string;
+  profiles: {
+    full_name: string | null;
+    email: string | null;
+  } | null;
+  order_items: {
+    id: string;
+    product_id: string;
+    quantity: number;
+    price: number;
+    selected_color: string | null;
+    selected_size: string | null;
+    products: {
+      name: string;
+      image_url: string | null;
+    } | null;
+  }[];
+}
+
 export default function Admin() {
   const { user, isAdmin, loading } = useAuth();
   const [products, setProducts] = useState<DatabaseProduct[]>([]);
+  const [orders, setOrders] = useState<Order[]>([]);
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -56,6 +84,7 @@ export default function Admin() {
   useEffect(() => {
     if (isAdmin) {
       fetchProducts();
+      fetchOrders();
     }
   }, [isAdmin]);
 
@@ -73,6 +102,41 @@ export default function Admin() {
       });
     } else {
       setProducts(data || []);
+    }
+  };
+
+  const fetchOrders = async () => {
+    const { data, error } = await supabase
+      .from("orders")
+      .select(`
+        *,
+        profiles:user_id (
+          full_name,
+          email
+        ),
+        order_items (
+          id,
+          product_id,
+          quantity,
+          price,
+          selected_color,
+          selected_size,
+          products (
+            name,
+            image_url
+          )
+        )
+      `)
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      toast({
+        title: "Error",
+        description: "Failed to fetch orders",
+        variant: "destructive",
+      });
+    } else {
+      setOrders(data || []);
     }
   };
 
@@ -166,6 +230,7 @@ export default function Admin() {
 
         // Refresh products
         fetchProducts();
+        fetchOrders();
       }
     } catch (error: any) {
       toast({
@@ -226,7 +291,14 @@ export default function Admin() {
       <div className="max-w-6xl mx-auto">
         <h1 className="text-3xl font-light mb-8">Admin Dashboard</h1>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <Tabs defaultValue="products" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="products">Products</TabsTrigger>
+            <TabsTrigger value="orders">Orders ({orders.length})</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="products" className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <Card>
             <CardHeader>
               <CardTitle>Add New Product</CardTitle>
@@ -462,6 +534,81 @@ export default function Admin() {
             </CardContent> */}
           </Card>
         </div>
+      </TabsContent>
+
+      <TabsContent value="orders" className="space-y-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Recent Orders ({orders.length})</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4 max-h-[800px] overflow-y-auto">
+              {orders.length === 0 ? (
+                <p className="text-gray-500 text-center py-8">No orders found</p>
+              ) : (
+                orders.map((order) => (
+                  <div
+                    key={order.id}
+                    className="border rounded-lg p-4 space-y-3"
+                  >
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <h3 className="font-medium">Order #{order.id.slice(0, 8)}</h3>
+                        <p className="text-sm text-gray-600">
+                          {order.profiles?.full_name || 'Unknown'} ({order.profiles?.email || 'No email'})
+                        </p>
+                        <p className="text-sm text-gray-500">
+                          {new Date(order.created_at).toLocaleDateString()} at {new Date(order.created_at).toLocaleTimeString()}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-medium">R{order.total_amount}</p>
+                        <span className={`px-2 py-1 rounded text-xs ${
+                          order.status === 'paid' 
+                            ? 'bg-green-100 text-green-800' 
+                            : order.status === 'pending'
+                            ? 'bg-yellow-100 text-yellow-800'
+                            : 'bg-red-100 text-red-800'
+                        }`}>
+                          {order.status}
+                        </span>
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <h4 className="text-sm font-medium text-gray-700">Items:</h4>
+                      {order.order_items.map((item) => (
+                        <div key={item.id} className="flex items-center gap-3 text-sm">
+                          <img
+                            src={item.products?.image_url || "/placeholder.png"}
+                            alt={item.products?.name || 'Product'}
+                            className="w-12 h-12 object-cover rounded"
+                          />
+                          <div className="flex-1">
+                            <p className="font-medium">{item.products?.name}</p>
+                            <p className="text-gray-500">
+                              Qty: {item.quantity} • R{item.price}
+                              {item.selected_color && ` • ${item.selected_color}`}
+                              {item.selected_size && ` • ${item.selected_size}`}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    
+                    {order.payment_id && (
+                      <p className="text-xs text-gray-500">
+                        Payment ID: {order.payment_id}
+                      </p>
+                    )}
+                  </div>
+                ))
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      </TabsContent>
+    </Tabs>
       </div>
     </div>
   );

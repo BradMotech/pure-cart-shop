@@ -119,9 +119,6 @@ export const PayfastButton = ({ totalAmount, onSuccess }: PayfastButtonProps) =>
       document.body.appendChild(form);
       form.submit();
       document.body.removeChild(form);
-
-      // Clear cart after successful submission
-      clearCart();
       
       if (onSuccess) {
         onSuccess();
