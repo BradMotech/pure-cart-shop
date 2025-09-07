@@ -31,12 +31,14 @@ const Index = () => {
       console.log('🔗 Supabase client:', supabase);
       
       // Test basic connection first
+      console.log('🧪 Testing basic connection...');
       const { data: testData, error: testError } = await supabase
         .from('products')
         .select('count', { count: 'exact', head: true });
       
-      console.log('🧪 Connection test:', { testData, testError });
+      console.log('🧪 Connection test result:', { testData, testError });
       
+      console.log('📡 Making main query...');
       const { data, error } = await supabase
         .from('products')
         .select('*')
@@ -47,7 +49,13 @@ const Index = () => {
         error, 
         dataType: typeof data,
         isArray: Array.isArray(data),
-        count: data?.length 
+        count: data?.length,
+        errorDetails: error ? {
+          message: error.message,
+          details: error.details,
+          hint: error.hint,
+          code: error.code
+        } : null
       });
       
       if (error) {
@@ -67,25 +75,29 @@ const Index = () => {
         return;
       }
       
+      console.log('🔍 Raw products from DB:', data);
       console.log('🔍 First product example:', data[0]);
       
       // Transform data to match Product interface
-      const transformedProducts = (data || []).map(product => ({
-        id: product.id,
-        name: product.name,
-        description: product.description || undefined,
-        price: product.price,
-        original_price: product.original_price || undefined,
-        category: product.category,
-        gender: product.gender,
-        colors: product.colors || [],
-        sizes: product.sizes || [],
-        image_url: product.image_url || undefined,
-        in_stock: product.in_stock ?? true,
-        is_on_sale: product.is_on_sale ?? false,
-        created_at: product.created_at || undefined,
-        updated_at: product.updated_at || undefined
-      }));
+      const transformedProducts = (data || []).map((product, index) => {
+        console.log(`🔄 Transforming product ${index + 1}:`, product);
+        return {
+          id: product.id,
+          name: product.name,
+          description: product.description || undefined,
+          price: product.price,
+          original_price: product.original_price || undefined,
+          category: product.category,
+          gender: product.gender,
+          colors: product.colors || [],
+          sizes: product.sizes || [],
+          image_url: product.image_url || undefined,
+          in_stock: product.in_stock ?? true,
+          is_on_sale: product.is_on_sale ?? false,
+          created_at: product.created_at || undefined,
+          updated_at: product.updated_at || undefined
+        };
+      });
       
       console.log('✅ Transformed products:', {
         count: transformedProducts.length,
@@ -93,7 +105,10 @@ const Index = () => {
         firstProduct: transformedProducts[0]
       });
       
+      console.log('🎯 Setting products state...');
       setProducts(transformedProducts);
+      console.log('✅ Products state set successfully');
+      
     } catch (error) {
       console.error('💥 Catch block error:', {
         error,
