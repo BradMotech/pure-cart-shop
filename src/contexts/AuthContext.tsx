@@ -73,7 +73,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     if (data && !error) {
       setProfile(data);
-      debugger
       // Check if user is admin by email or other criteria since is_admin column might not exist
       const adminEmails = ['mashaobradley@gmail.com', 'bradley@motechxpress.co.za'];
       const isUserAdmin = adminEmails.includes(data.email || '');

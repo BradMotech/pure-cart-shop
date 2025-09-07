@@ -26,11 +26,15 @@ const Index = () => {
   }, []);
 
   const fetchProducts = async () => {
-    try {      
+    try {
+      console.log('Fetching products from Supabase...');
+      
       const { data, error } = await supabase
         .from('products')
         .select('*')
         .limit(50);
+      
+      console.log('Supabase response:', { data, error, count: data?.length });
       
       if (error) {
         console.error('Supabase error:', error);
@@ -56,6 +60,7 @@ const Index = () => {
         updated_at: product.updated_at || undefined
       }));
       
+      console.log('Transformed products:', transformedProducts);
       setProducts(transformedProducts);
     } catch (error) {
       console.error('Error fetching products:', error);
