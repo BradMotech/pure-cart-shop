@@ -1,0 +1,23 @@
+{
+  "name": "YEWA - Apparel Brand",
+  "short_name": "YEWA",
+  "description": "YEWA apparel brand built on bloodlines and ancestry, woven into every thread.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#1e3a8a",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "categories": ["shopping", "fashion", "lifestyle"]
+}
