@@ -80,9 +80,9 @@ export const PayfastButton = ({ totalAmount, onSuccess }: PayfastButtonProps) =>
       // Create Payfast payment form
       const merchant_id = '10000100'; // Sandbox merchant ID
       const merchant_key = '46f0cd694581a'; // Sandbox merchant key
-      const return_url = `${window.location.origin}/`;
-      const cancel_url = `${window.location.origin}/cart`;
-      const notify_url = `${window.location.origin}/api/payfast/notify`;
+      const return_url = `${window.location.origin}/payment-success`;
+      const cancel_url = `${window.location.origin}/cart`; // unchanged
+      const notify_url = `https://tindaknujaloljfthmum.supabase.co/functions/v1/payfast-notify`;
       
       const paymentData = {
         merchant_id,

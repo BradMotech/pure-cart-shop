@@ -1,4 +1,13 @@
-project_id = "attqsvaofnoctctqumvc"
+project_id = "tindaknujaloljfthmum"
 
 [functions.pdf-proxy]
+verify_jwt = false
+
+[functions.etenders-proxy]
+verify_jwt = false
+
+[functions.payfast-payment]
+verify_jwt = false
+
+[functions.payfast-notify]
 verify_jwt = false
