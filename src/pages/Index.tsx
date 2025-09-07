@@ -27,20 +27,34 @@ const Index = () => {
 
   const fetchProducts = async () => {
     try {
-      console.log('Fetching products from Supabase...');
+      console.log('🔄 Starting to fetch products from Supabase...');
       
       const { data, error } = await supabase
         .from('products')
         .select('*')
         .limit(50);
       
-      console.log('Supabase response:', { data, error, count: data?.length });
+      console.log('📦 Raw Supabase response:', { 
+        data, 
+        error, 
+        dataType: typeof data,
+        isArray: Array.isArray(data),
+        count: data?.length 
+      });
       
       if (error) {
-        console.error('Supabase error:', error);
+        console.error('❌ Supabase error details:', error);
         setProducts([]);
         return;
       }
+      
+      if (!data || data.length === 0) {
+        console.log('⚠️ No products found in database');
+        setProducts([]);
+        return;
+      }
+      
+      console.log('🔍 First product example:', data[0]);
       
       // Transform data to match Product interface
       const transformedProducts = (data || []).map(product => ({
@@ -60,12 +74,18 @@ const Index = () => {
         updated_at: product.updated_at || undefined
       }));
       
-      console.log('Transformed products:', transformedProducts);
+      console.log('✅ Transformed products:', {
+        count: transformedProducts.length,
+        products: transformedProducts,
+        firstProduct: transformedProducts[0]
+      });
+      
       setProducts(transformedProducts);
     } catch (error) {
-      console.error('Error fetching products:', error);
+      console.error('💥 Catch block error:', error);
       setProducts([]);
     } finally {
+      console.log('🏁 Fetch products completed, setting loading to false');
       setLoading(false);
     }
   };
