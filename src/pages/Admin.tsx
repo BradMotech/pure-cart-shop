@@ -78,7 +78,8 @@ export default function Admin() {
     inStock: true,
     isOnSale: false,
   });
-  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
+  const [editingProduct, setEditingProduct] = useState<DatabaseProduct | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
@@ -140,27 +141,35 @@ export default function Admin() {
     }
   };
 
-  const uploadImage = async (file: File): Promise<string | null> => {
-    const fileName = `${Date.now()}-${file.name}`;
-    const { data, error } = await supabase.storage
-      .from("product-images")
-      .upload(fileName, file);
+  const uploadImages = async (files: File[]): Promise<string[]> => {
+    const uploadPromises = files.map(async (file) => {
+      const fileName = `${Date.now()}-${Math.random()}-${file.name}`;
+      const { data, error } = await supabase.storage
+        .from("product-images")
+        .upload(fileName, file);
 
-    if (error) {
-      console.error("Upload error:", error);
+      if (error) {
+        console.error("Upload error:", error);
+        throw error;
+      }
+
+      const {
+        data: { publicUrl },
+      } = supabase.storage.from("product-images").getPublicUrl(fileName);
+
+      return publicUrl;
+    });
+
+    try {
+      return await Promise.all(uploadPromises);
+    } catch (error) {
       toast({
         title: "Upload Error",
-        description: "Failed to upload image",
+        description: "Failed to upload one or more images",
         variant: "destructive",
       });
-      return null;
+      return [];
     }
-
-    const {
-      data: { publicUrl },
-    } = supabase.storage.from("product-images").getPublicUrl(fileName);
-
-    return publicUrl;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -168,49 +177,63 @@ export default function Admin() {
     setSubmitting(true);
 
     try {
-      let imageUrl = null;
-      if (imageFile) {
-        imageUrl = await uploadImage(imageFile);
-        if (!imageUrl) {
+      let imageUrls: string[] = [];
+      if (imageFiles.length > 0) {
+        imageUrls = await uploadImages(imageFiles);
+        if (imageUrls.length === 0) {
           setSubmitting(false);
           return;
         }
       }
 
-      const { error } = await supabase.from("products").insert([
-        {
-          name: formData.name,
-          description: formData.description || null,
-          price: parseFloat(formData.price),
-          original_price: formData.originalPrice
-            ? parseFloat(formData.originalPrice)
-            : null,
-          category: formData.category,
-          gender: formData.gender,
-          colors: formData.colors
-            .split(",")
-            .map((c) => c.trim())
-            .filter((c) => c),
-          sizes: formData.sizes
-            .split(",")
-            .map((s) => s.trim())
-            .filter((s) => s),
-          image_url: imageUrl,
-          in_stock: formData.inStock,
-          is_on_sale: formData.isOnSale,
-        },
-      ]);
+      const productData = {
+        name: formData.name,
+        description: formData.description || null,
+        price: parseFloat(formData.price),
+        original_price: formData.originalPrice
+          ? parseFloat(formData.originalPrice)
+          : null,
+        category: formData.category,
+        gender: formData.gender,
+        colors: formData.colors
+          .split(",")
+          .map((c) => c.trim())
+          .filter((c) => c),
+        sizes: formData.sizes
+          .split(",")
+          .map((s) => s.trim())
+          .filter((s) => s),
+        image_url: imageUrls[0] || null, // Main image
+        in_stock: formData.inStock,
+        is_on_sale: formData.isOnSale,
+      };
+
+      let error;
+      if (editingProduct) {
+        // Update existing product
+        const { error: updateError } = await supabase
+          .from("products")
+          .update(productData)
+          .eq("id", editingProduct.id);
+        error = updateError;
+      } else {
+        // Insert new product
+        const { error: insertError } = await supabase
+          .from("products")
+          .insert([productData]);
+        error = insertError;
+      }
 
       if (error) {
         toast({
           title: "Error",
-          description: error.message || "Failed to add product",
+          description: error.message || "Failed to save product",
           variant: "destructive",
         });
       } else {
         toast({
           title: "Success",
-          description: "Product added successfully!",
+          description: editingProduct ? "Product updated successfully!" : "Product added successfully!",
         });
 
         // Reset form
@@ -226,7 +249,8 @@ export default function Admin() {
           inStock: true,
           isOnSale: false,
         });
-        setImageFile(null);
+        setImageFiles([]);
+        setEditingProduct(null);
 
         // Refresh products
         fetchProducts();
@@ -241,6 +265,39 @@ export default function Admin() {
     } finally {
       setSubmitting(false);
     }
+  };
+
+  const editProduct = (product: DatabaseProduct) => {
+    setEditingProduct(product);
+    setFormData({
+      name: product.name,
+      description: product.description || "",
+      price: product.price.toString(),
+      originalPrice: product.original_price?.toString() || "",
+      category: product.category,
+      gender: product.gender,
+      colors: product.colors?.join(", ") || "",
+      sizes: product.sizes?.join(", ") || "",
+      inStock: product.in_stock ?? true,
+      isOnSale: product.is_on_sale ?? false,
+    });
+  };
+
+  const cancelEdit = () => {
+    setEditingProduct(null);
+    setFormData({
+      name: "",
+      description: "",
+      price: "",
+      originalPrice: "",
+      category: "",
+      gender: "",
+      colors: "",
+      sizes: "",
+      inStock: true,
+      isOnSale: false,
+    });
+    setImageFiles([]);
   };
 
   const deleteProduct = async (id: string) => {
@@ -301,7 +358,7 @@ export default function Admin() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <Card>
             <CardHeader>
-              <CardTitle>Add New Product</CardTitle>
+              <CardTitle>{editingProduct ? 'Edit Product' : 'Add New Product'}</CardTitle>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-4">
@@ -426,13 +483,22 @@ export default function Admin() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="image">Product Image</Label>
+                  <Label htmlFor="images">Product Images (multiple allowed)</Label>
                   <Input
-                    id="image"
+                    id="images"
                     type="file"
                     accept="image/*"
-                    onChange={(e) => setImageFile(e.target.files?.[0] || null)}
+                    multiple
+                    onChange={(e) => {
+                      const files = Array.from(e.target.files || []);
+                      setImageFiles(files);
+                    }}
                   />
+                  {imageFiles.length > 0 && (
+                    <p className="text-sm text-muted-foreground">
+                      {imageFiles.length} image(s) selected
+                    </p>
+                  )}
                 </div>
 
                 <div className="flex items-center space-x-4">
@@ -459,10 +525,17 @@ export default function Admin() {
                   </label>
                 </div>
 
-                <Button type="submit" disabled={submitting} className="w-full">
-                  <Upload className="w-4 h-4 mr-2" />
-                  {submitting ? "Adding Product..." : "Add Product"}
-                </Button>
+                <div className="flex gap-2">
+                  <Button type="submit" disabled={submitting} className="flex-1">
+                    <Upload className="w-4 h-4 mr-2" />
+                    {submitting ? (editingProduct ? "Updating..." : "Adding...") : (editingProduct ? "Update Product" : "Add Product")}
+                  </Button>
+                  {editingProduct && (
+                    <Button type="button" variant="outline" onClick={cancelEdit}>
+                      Cancel
+                    </Button>
+                  )}
+                </div>
               </form>
             </CardContent>
           </Card>
@@ -493,15 +566,25 @@ export default function Admin() {
                       </p>
                     </div>
 
-                    {/* Delete button */}
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => deleteProduct(product.id)}
-                      className="text-destructive hover:text-destructive"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
+                    {/* Action buttons */}
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => editProduct(product)}
+                        className="text-blue-600 hover:text-blue-800"
+                      >
+                        Edit
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => deleteProduct(product.id)}
+                        className="text-destructive hover:text-destructive"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
                   </div>
                 ))}
               </div>

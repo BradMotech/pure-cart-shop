@@ -164,23 +164,23 @@ const Cart = () => {
                   </div>
                   <div className="flex justify-between">
                     <span className="text-shop-text-light">Shipping</span>
-                    <span className="text-shop-text">Free</span>
+                    <span className="text-shop-text">{totalPrice >= 999 ? 'Free' : 'R110.00'}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-shop-text-light">VAT (15%)</span>
-                    <span className="text-shop-text">R{(totalPrice * 0.15).toFixed(2)}</span>
+                    <span className="text-shop-text-light">VAT</span>
+                    <span className="text-shop-text">R0.00</span>
                   </div>
                 </div>
 
                 <div className="pt-4 mb-6">
                   <div className="flex justify-between text-lg font-semibold">
                     <span>Total</span>
-                    <span>R{(totalPrice * 1.15).toFixed(2)}</span>
+                    <span>R{(totalPrice + (totalPrice >= 999 ? 0 : 110)).toFixed(2)}</span>
                   </div>
                 </div>
 
                 <PayfastButton 
-                  totalAmount={totalPrice * 1.15}
+                  totalAmount={totalPrice + (totalPrice >= 999 ? 0 : 110)}
                 />
               </div>
             </div>

@@ -73,10 +73,21 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     if (data && !error) {
       setProfile(data);
-      // Check if user is admin by email or other criteria since is_admin column might not exist
-      const adminEmails = ['mashaobradley@gmail.com', 'bradley@motechxpress.co.za'];
-      const isUserAdmin = adminEmails.includes(data.email || '');
-      setIsAdmin(!!isUserAdmin);
+      
+      // Check if user has admin role using the database function
+      const { data: roleData, error: roleError } = await supabase.rpc('has_role', {
+        _user_id: userId,
+        _role: 'admin'
+      });
+      
+      if (!roleError) {
+        setIsAdmin(!!roleData);
+      } else {
+        // Fallback to email-based admin check
+        const adminEmails = ['mashaobradley@gmail.com', 'bradley@motechxpress.co.za'];
+        const isUserAdmin = adminEmails.includes(data.email || '');
+        setIsAdmin(!!isUserAdmin);
+      }
     } else {
       // If no profile exists, create one
       if (error && error.code === 'PGRST116') {

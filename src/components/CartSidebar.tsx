@@ -98,9 +98,19 @@ const CartSidebar = () => {
               </div>
 
               <div className="border-t border-shop-border pt-6 space-y-4">
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span>Subtotal</span>
+                    <span>R{totalPrice.toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Shipping</span>
+                    <span>{totalPrice >= 999 ? 'Free' : 'R110.00'}</span>
+                  </div>
+                </div>
                 <div className="flex justify-between text-lg font-medium">
                   <span>Total</span>
-                  <span>R{totalPrice.toFixed(2)}</span>
+                  <span>R{(totalPrice + (totalPrice >= 999 ? 0 : 110)).toFixed(2)}</span>
                 </div>
                 
                 <div className="space-y-2">
