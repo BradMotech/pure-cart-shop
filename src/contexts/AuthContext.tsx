@@ -107,33 +107,25 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       if (data && !error) {
         setProfile(data);
         
-        // Check if user has admin role using the database function with timeout
+        // Check if user is admin by checking admins table
         try {
-          const rolePromise = supabase.rpc('has_role', {
-            _user_id: userId,
-            _role: 'admin'
-          });
+          const adminCheckPromise = supabase
+            .from('admins')
+            .select('email')
+            .eq('email', data.email)
+            .single();
           
-          const roleTimeoutPromise = new Promise((_, reject) => 
-            setTimeout(() => reject(new Error('Role check timeout')), 5000)
+          const adminTimeoutPromise = new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Admin check timeout')), 5000)
           );
 
-          const { data: roleData, error: roleError } = await Promise.race([rolePromise, roleTimeoutPromise]) as any;
+          const { data: adminData, error: adminError } = await Promise.race([adminCheckPromise, adminTimeoutPromise]) as any;
           
-          if (!roleError) {
-            setIsAdmin(!!roleData);
-          } else {
-            // Fallback to email-based admin check
-            const adminEmails = ['mashaobradley@gmail.com', 'bradley@motechxpress.co.za'];
-            const isUserAdmin = adminEmails.includes(data.email || '');
-            setIsAdmin(!!isUserAdmin);
-          }
-        } catch (roleError) {
-          console.warn('Role check failed, using email fallback:', roleError);
-          // Fallback to email-based admin check
-          const adminEmails = ['mashaobradley@gmail.com', 'bradley@motechxpress.co.za'];
-          const isUserAdmin = adminEmails.includes(data.email || '');
-          setIsAdmin(!!isUserAdmin);
+          // User is admin if their email exists in the admins table
+          setIsAdmin(!!adminData && !adminError);
+        } catch (adminError) {
+          console.warn('Admin check failed:', adminError);
+          setIsAdmin(false);
         }
       } else {
         // If no profile exists, create one
@@ -152,6 +144,19 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                 email: userData.user.email,
                 full_name: null
               });
+              
+              // Check admin status for new profile
+              try {
+                const { data: adminData } = await supabase
+                  .from('admins')
+                  .select('email')
+                  .eq('email', userData.user.email)
+                  .single();
+                
+                setIsAdmin(!!adminData);
+              } catch {
+                setIsAdmin(false);
+              }
             }
           } catch (insertError) {
             console.error('Failed to create profile:', insertError);

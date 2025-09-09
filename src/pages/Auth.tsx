@@ -138,16 +138,6 @@ export default function Auth() {
             >
               ← Back to Shop
             </button>
-<div className='w-full m-3'>
-
-</div>
-            <button
-    type="button"
-    onClick={() => navigate('/admin-login')}
-    className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-  >
-    Sign in as Admin →
-  </button>
           </div>
         </CardContent>
       </Card>

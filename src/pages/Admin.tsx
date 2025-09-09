@@ -107,37 +107,47 @@ export default function Admin() {
   };
 
   const fetchOrders = async () => {
-    const { data, error } = await supabase
-      .from("orders")
-      .select(`
-        *,
-        profiles:user_id (
-          full_name,
-          email
-        ),
-        order_items (
-          id,
-          product_id,
-          quantity,
-          price,
-          selected_color,
-          selected_size,
-          products (
-            name,
-            image_url
+    try {
+      const { data, error } = await supabase
+        .from("orders")
+        .select(`
+          *,
+          profiles:user_id (
+            full_name,
+            email
+          ),
+          order_items (
+            id,
+            product_id,
+            quantity,
+            price,
+            selected_color,
+            selected_size,
+            products (
+              name,
+              image_url
+            )
           )
-        )
-      `)
-      .order("created_at", { ascending: false });
+        `)
+        .order("created_at", { ascending: false });
 
-    if (error) {
+      if (error) {
+        console.error("Orders fetch error:", error);
+        toast({
+          title: "Error",
+          description: `Failed to fetch orders: ${error.message}`,
+          variant: "destructive",
+        });
+      } else {
+        setOrders(data || []);
+      }
+    } catch (error: any) {
+      console.error("Orders fetch exception:", error);
       toast({
         title: "Error",
-        description: "Failed to fetch orders",
+        description: `Failed to fetch orders: ${error.message}`,
         variant: "destructive",
       });
-    } else {
-      setOrders(data || []);
     }
   };
 

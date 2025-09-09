@@ -130,13 +130,6 @@ const Index = () => {
             <div className="space-y-4">
               <p className="text-gray-600">No products found.</p>
               <p className="text-sm text-gray-500">Make sure you have products in your Supabase database.</p>
-              <Button 
-                onClick={() => window.location.href = '/admin'}
-                variant="outline"
-                className="border-black text-black hover:bg-black hover:text-white"
-              >
-                Add Products (Admin)
-              </Button>
             </div>
           </div>
         )}

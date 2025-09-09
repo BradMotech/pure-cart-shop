@@ -36,14 +36,6 @@ const Header = () => {
               <button className="text-sm font-medium text-gray-700 hover:text-black transition-colors uppercase tracking-wider">
                 About
               </button>
-              {!user && (
-                <button 
-                  onClick={() => navigate('/admin-login')}
-                  className="text-sm font-medium text-gray-700 hover:text-black transition-colors uppercase tracking-wider"
-                >
-                  Admin
-                </button>
-              )}
             </nav>
           </div>
 
