@@ -32,26 +32,48 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [actionLoading, setActionLoading] = useState(false);
 
   useEffect(() => {
+    let mounted = true;
+
     // Get initial session
     const getInitialSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (session?.user) {
-        setUser(session.user);
-        await fetchProfile(session.user.id);
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (mounted) {
+          if (session?.user) {
+            setUser(session.user);
+            // Use setTimeout to defer profile fetching and prevent blocking
+            setTimeout(() => {
+              if (mounted) {
+                fetchProfile(session.user.id);
+              }
+            }, 0);
+          }
+          setLoading(false);
+        }
+      } catch (error) {
+        console.error('Error getting initial session:', error);
+        if (mounted) {
+          setLoading(false);
+        }
       }
-      
-      setLoading(false);
     };
 
     getInitialSession();
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+      (event, session) => {
+        if (!mounted) return;
+
         if (session?.user) {
           setUser(session.user);
-          await fetchProfile(session.user.id);
+          // Use setTimeout to defer profile fetching and prevent blocking
+          setTimeout(() => {
+            if (mounted) {
+              fetchProfile(session.user.id);
+            }
+          }, 0);
         } else {
           setUser(null);
           setProfile(null);
@@ -61,45 +83,86 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
     );
 
-    return () => subscription.unsubscribe();
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const fetchProfile = async (userId: string) => {
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', userId)
-      .single();
+    try {
+      // Add timeout to prevent hanging
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Profile fetch timeout')), 10000)
+      );
 
-    if (data && !error) {
-      setProfile(data);
-      
-      // Check if user has admin role using the database function
-      const { data: roleData, error: roleError } = await supabase.rpc('has_role', {
-        _user_id: userId,
-        _role: 'admin'
-      });
-      
-      if (!roleError) {
-        setIsAdmin(!!roleData);
-      } else {
-        // Fallback to email-based admin check
-        const adminEmails = ['mashaobradley@gmail.com', 'bradley@motechxpress.co.za'];
-        const isUserAdmin = adminEmails.includes(data.email || '');
-        setIsAdmin(!!isUserAdmin);
-      }
-    } else {
-      // If no profile exists, create one
-      if (error && error.code === 'PGRST116') {
-        const { data: userData } = await supabase.auth.getUser();
-        if (userData.user) {
-          await supabase.from('profiles').insert({
-            id: userId,
-            email: userData.user.email,
-            full_name: null
+      const profilePromise = supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
+
+      const { data, error } = await Promise.race([profilePromise, timeoutPromise]) as any;
+
+      if (data && !error) {
+        setProfile(data);
+        
+        // Check if user has admin role using the database function with timeout
+        try {
+          const rolePromise = supabase.rpc('has_role', {
+            _user_id: userId,
+            _role: 'admin'
           });
+          
+          const roleTimeoutPromise = new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Role check timeout')), 5000)
+          );
+
+          const { data: roleData, error: roleError } = await Promise.race([rolePromise, roleTimeoutPromise]) as any;
+          
+          if (!roleError) {
+            setIsAdmin(!!roleData);
+          } else {
+            // Fallback to email-based admin check
+            const adminEmails = ['mashaobradley@gmail.com', 'bradley@motechxpress.co.za'];
+            const isUserAdmin = adminEmails.includes(data.email || '');
+            setIsAdmin(!!isUserAdmin);
+          }
+        } catch (roleError) {
+          console.warn('Role check failed, using email fallback:', roleError);
+          // Fallback to email-based admin check
+          const adminEmails = ['mashaobradley@gmail.com', 'bradley@motechxpress.co.za'];
+          const isUserAdmin = adminEmails.includes(data.email || '');
+          setIsAdmin(!!isUserAdmin);
+        }
+      } else {
+        // If no profile exists, create one
+        if (error && error.code === 'PGRST116') {
+          try {
+            const { data: userData } = await supabase.auth.getUser();
+            if (userData.user) {
+              await supabase.from('profiles').insert({
+                id: userId,
+                email: userData.user.email,
+                full_name: null
+              });
+              // Set basic profile data
+              setProfile({
+                id: userId,
+                email: userData.user.email,
+                full_name: null
+              });
+            }
+          } catch (insertError) {
+            console.error('Failed to create profile:', insertError);
+          }
         }
       }
+    } catch (error) {
+      console.error('Error fetching profile:', error);
+      // Reset states on error to prevent infinite loading
+      setProfile(null);
+      setIsAdmin(false);
     }
   };
 
@@ -138,9 +201,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const signOut = async () => {
     setActionLoading(true);
-    await supabase.auth.signOut();
-    // Keep loading for a moment to show transition
-    setTimeout(() => setActionLoading(false), 1000);
+    try {
+      await supabase.auth.signOut();
+      // Clear all auth state immediately
+      setUser(null);
+      setProfile(null);
+      setIsAdmin(false);
+    } catch (error) {
+      console.error('Sign out error:', error);
+    } finally {
+      // Always reset loading state
+      setTimeout(() => setActionLoading(false), 500);
+    }
   };
 
   return (
