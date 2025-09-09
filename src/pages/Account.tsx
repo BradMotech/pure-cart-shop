@@ -39,16 +39,20 @@ export default function Account() {
   const fetchProfile = async () => {
     if (!user) return;
     
+    console.log('📋 Account fetchProfile - Starting for user:', user.email, user.id);
+    
     const { data, error } = await supabase
       .from('profiles')
       .select('*')
       .eq('id', user.id)
       .single();
 
+    console.log('📋 Account fetchProfile - Result:', data, 'error:', error);
+
     if (error) {
       toast({
         title: "Error",
-        description: "Failed to fetch profile",
+        description: `Failed to fetch profile: ${error.message}`,
         variant: "destructive"
       });
     } else if (data) {
@@ -59,6 +63,8 @@ export default function Account() {
 
   const fetchOrders = async () => {
     if (!user) return;
+    
+    console.log('🛒 Account fetchOrders - Starting for user:', user.email, user.id);
     
     const { data, error } = await supabase
       .from('orders')
@@ -72,10 +78,12 @@ export default function Account() {
       .eq('user_id', user.id)
       .order('created_at', { ascending: false });
     
+    console.log('🛒 Account fetchOrders - Result:', data, 'error:', error);
+    
     if (error) {
       toast({
         title: "Error",
-        description: "Failed to fetch orders",
+        description: `Failed to fetch orders: ${error.message}`,
         variant: "destructive"
       });
     } else {

@@ -13,6 +13,8 @@ const Header = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
+  console.log('🔘 Header - User:', user?.email, 'isAdmin:', isAdmin);
+
   return (
     <header className="sticky top-0 z-50 border-b border-gray-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80">
       <div className="container mx-auto px-6">

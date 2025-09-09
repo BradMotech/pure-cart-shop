@@ -91,6 +91,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const fetchProfile = async (userId: string) => {
     try {
+      console.log('🔍 fetchProfile - Starting for userId:', userId);
+      
       // Add timeout to prevent hanging
       const timeoutPromise = new Promise((_, reject) => 
         setTimeout(() => reject(new Error('Profile fetch timeout')), 10000)
@@ -103,35 +105,40 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         .single();
 
       const { data, error } = await Promise.race([profilePromise, timeoutPromise]) as any;
+      console.log('📋 fetchProfile - Profile data:', data, 'error:', error);
 
       if (data && !error) {
         setProfile(data);
+        console.log('✅ fetchProfile - Profile set, checking admin status for email:', data.email);
         
         // Check if user is admin by checking admins table
         try {
-          const adminCheckPromise = supabase
+          console.log('🔐 fetchProfile - Checking admin status for email:', data.email);
+          
+          // Direct check without JWT - use the user's email from profile
+          const { data: adminData, error: adminError } = await supabase
             .from('admins')
             .select('email')
             .eq('email', data.email)
             .single();
           
-          const adminTimeoutPromise = new Promise((_, reject) => 
-            setTimeout(() => reject(new Error('Admin check timeout')), 5000)
-          );
-
-          const { data: adminData, error: adminError } = await Promise.race([adminCheckPromise, adminTimeoutPromise]) as any;
+          console.log('🔐 fetchProfile - Admin check result:', adminData, 'error:', adminError);
           
           // User is admin if their email exists in the admins table
-          setIsAdmin(!!adminData && !adminError);
+          const isAdminUser = !!adminData && !adminError;
+          console.log('👤 fetchProfile - Setting isAdmin to:', isAdminUser);
+          setIsAdmin(isAdminUser);
         } catch (adminError) {
-          console.warn('Admin check failed:', adminError);
+          console.warn('❌ fetchProfile - Admin check failed:', adminError);
           setIsAdmin(false);
         }
       } else {
+        console.log('⚠️ fetchProfile - No profile found, creating one');
         // If no profile exists, create one
         if (error && error.code === 'PGRST116') {
           try {
             const { data: userData } = await supabase.auth.getUser();
+            console.log('👤 fetchProfile - Creating profile for user:', userData.user?.email);
             if (userData.user) {
               await supabase.from('profiles').insert({
                 id: userId,
@@ -153,18 +160,22 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                   .eq('email', userData.user.email)
                   .single();
                 
-                setIsAdmin(!!adminData);
+                console.log('🔐 fetchProfile - New profile admin check:', adminData);
+                const isAdminUser = !!adminData;
+                console.log('👤 fetchProfile - Setting isAdmin (new profile) to:', isAdminUser);
+                setIsAdmin(isAdminUser);
               } catch {
+                console.log('❌ fetchProfile - New profile admin check failed');
                 setIsAdmin(false);
               }
             }
           } catch (insertError) {
-            console.error('Failed to create profile:', insertError);
+            console.error('💥 fetchProfile - Failed to create profile:', insertError);
           }
         }
       }
     } catch (error) {
-      console.error('Error fetching profile:', error);
+      console.error('💥 fetchProfile - Error:', error);
       // Reset states on error to prevent infinite loading
       setProfile(null);
       setIsAdmin(false);
