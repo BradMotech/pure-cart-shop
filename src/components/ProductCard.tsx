@@ -6,7 +6,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
 interface ProductCardProps {
@@ -22,7 +22,9 @@ const ProductCard = ({ product }: ProductCardProps) => {
   const [selectedSize, setSelectedSize] = useState(product.sizes?.[0] || '');
   const [images, setImages] = useState<string[]>([]);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  
+   const touchStartX = useRef(0);
+  const touchEndX = useRef(0);
+
   const inWishlist = isInWishlist(product.id);
 
   useEffect(() => {
@@ -50,6 +52,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
         setImages([product.image_url]);
       } else {
         setImages(imageUrls);
+        console.log('images ',imageUrls)
       }
     } catch (error) {
       console.error('Error fetching product images:', error);
@@ -60,6 +63,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
   const currentImage = images[currentImageIndex] || product.image_url || '/placeholder.svg';
 
   const nextImage = () => {
+    console.log('images ',images)
     if (images.length > 1) {
       setCurrentImageIndex((prev) => (prev + 1) % images.length);
     }
@@ -71,6 +75,20 @@ const ProductCard = ({ product }: ProductCardProps) => {
     }
   };
 
+    const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.changedTouches[0].screenX;
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    touchEndX.current = e.changedTouches[0].screenX;
+    const distance = touchEndX.current - touchStartX.current;
+    const threshold = 50; // minimum swipe distance
+    if (distance > threshold) {
+      prevImage();
+    } else if (distance < -threshold) {
+      nextImage();
+    }
+  };
   const handleAddToCart = () => {
     if (!user) {
       window.location.href = '/auth';
@@ -129,6 +147,8 @@ const ProductCard = ({ product }: ProductCardProps) => {
                   src={currentImage}
                   alt={product.name}
                   className="w-full h-auto max-h-[80vh] object-contain"
+                  onTouchStart={handleTouchStart}
+                  onTouchEnd={handleTouchEnd}
                 />
                 <div className="p-6 border-t border-gray-100">
                   <h3 className="text-xl font-light text-black mb-2">{product.name}</h3>
@@ -149,7 +169,8 @@ const ProductCard = ({ product }: ProductCardProps) => {
           </Dialog>
         </div>
         
-        <div className="aspect-[3/4] overflow-hidden relative">
+        <div className="aspect-[3/4] overflow-hidden relative" onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}>
           <img
             src={currentImage}
             alt={product.name}
@@ -164,11 +185,13 @@ const ProductCard = ({ product }: ProductCardProps) => {
                   e.stopPropagation();
                   prevImage();
                 }}
+                style={{zIndex:999999999999}}
                 className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-white/90 hover:bg-white rounded-full p-1.5 shadow-sm opacity-0 group-hover:opacity-100 transition-all duration-300"
               >
                 <ChevronLeft className="h-4 w-4 text-gray-700" />
               </button>
               <button
+              style={{zIndex:999999999999}}
                 onClick={(e) => {
                   e.stopPropagation();
                   nextImage();

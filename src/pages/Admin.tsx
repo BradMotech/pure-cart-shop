@@ -164,100 +164,225 @@ export default function Admin() {
     }
   };
 
+  // const handleSubmit = async (e: React.FormEvent) => {
+  //   e.preventDefault();
+  //   setSubmitting(true);
+
+  //   try {
+  //     let imageUrls: string[] = [];
+  //     if (imageFiles.length > 0) {
+  //       imageUrls = await uploadImages(imageFiles);
+  //       if (imageUrls.length === 0) {
+  //         setSubmitting(false);
+  //         return;
+  //       }
+  //     }
+
+  //     const productData = {
+  //       name: formData.name,
+  //       description: formData.description || null,
+  //       price: parseFloat(formData.price),
+  //       original_price: formData.originalPrice
+  //         ? parseFloat(formData.originalPrice)
+  //         : null,
+  //       category: formData.category,
+  //       gender: formData.gender,
+  //       colors: formData.colors
+  //         .split(",")
+  //         ?.map((c) => c.trim())
+  //         .filter((c) => c),
+  //       sizes: formData.sizes
+  //         .split(",")
+  //         ?.map((s) => s.trim())
+  //         .filter((s) => s),
+  //       image_url: imageUrls[0] || null, // Main image
+  //       in_stock: formData.inStock,
+  //       is_on_sale: formData.isOnSale,
+  //     };
+
+  //     let error;
+  //     if (editingProduct) {
+  //       // Update existing product
+  //       const { error: updateError } = await supabase
+  //         .from("products")
+  //         .update(productData)
+  //         .eq("id", editingProduct.id);
+  //       error = updateError;
+  //     } else {
+  //       // Insert new product
+  //       const { error: insertError } = await supabase
+  //         .from("products")
+  //         .insert([productData]);
+  //       error = insertError;
+  //     }
+
+  //     if (error) {
+  //       toast({
+  //         title: "Error",
+  //         description: error.message || "Failed to save product",
+  //         variant: "destructive",
+  //       });
+  //     } else {
+  //       toast({
+  //         title: "Success",
+  //         description: editingProduct ? "Product updated successfully!" : "Product added successfully!",
+  //       });
+
+  //       // Reset form
+  //       setFormData({
+  //         name: "",
+  //         description: "",
+  //         price: "",
+  //         originalPrice: "",
+  //         category: "",
+  //         gender: "",
+  //         colors: "",
+  //         sizes: "",
+  //         inStock: true,
+  //         isOnSale: false,
+  //       });
+  //       setImageFiles([]);
+  //       setEditingProduct(null);
+
+  //       // Refresh products
+  //       fetchProducts();
+  //       fetchOrders();
+  //     }
+  //   } catch (error: any) {
+  //     toast({
+  //       title: "Error",
+  //       description: error.message,
+  //       variant: "destructive",
+  //     });
+  //   } finally {
+  //     setSubmitting(false);
+  //   }
+  // };
+
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSubmitting(true);
+  e.preventDefault();
+  setSubmitting(true);
 
-    try {
-      let imageUrls: string[] = [];
-      if (imageFiles.length > 0) {
-        imageUrls = await uploadImages(imageFiles);
-        if (imageUrls.length === 0) {
-          setSubmitting(false);
-          return;
-        }
+  try {
+    let imageUrls: string[] = [];
+    if (imageFiles.length > 0) {
+      imageUrls = await uploadImages(imageFiles);
+      if (imageUrls.length === 0) {
+        setSubmitting(false);
+        return;
       }
+    }
 
-      const productData = {
-        name: formData.name,
-        description: formData.description || null,
-        price: parseFloat(formData.price),
-        original_price: formData.originalPrice
-          ? parseFloat(formData.originalPrice)
-          : null,
-        category: formData.category,
-        gender: formData.gender,
-        colors: formData.colors
-          .split(",")
-          ?.map((c) => c.trim())
-          .filter((c) => c),
-        sizes: formData.sizes
-          .split(",")
-          ?.map((s) => s.trim())
-          .filter((s) => s),
-        image_url: imageUrls[0] || null, // Main image
-        in_stock: formData.inStock,
-        is_on_sale: formData.isOnSale,
-      };
+    const productData = {
+      name: formData.name,
+      description: formData.description || null,
+      price: parseFloat(formData.price),
+      original_price: formData.originalPrice
+        ? parseFloat(formData.originalPrice)
+        : null,
+      category: formData.category,
+      gender: formData.gender,
+      colors: formData.colors
+        .split(",")
+        ?.map((c) => c.trim())
+        .filter((c) => c),
+      sizes: formData.sizes
+        .split(",")
+        ?.map((s) => s.trim())
+        .filter((s) => s),
+      image_url: imageUrls[0] || null, // main image
+      in_stock: formData.inStock,
+      is_on_sale: formData.isOnSale,
+    };
 
-      let error;
-      if (editingProduct) {
-        // Update existing product
-        const { error: updateError } = await supabase
-          .from("products")
-          .update(productData)
-          .eq("id", editingProduct.id);
-        error = updateError;
-      } else {
-        // Insert new product
-        const { error: insertError } = await supabase
-          .from("products")
-          .insert([productData]);
-        error = insertError;
+    let productId: string | null = null;
+    let error;
+
+    if (editingProduct) {
+      const { error: updateError } = await supabase
+        .from("products")
+        .update(productData)
+        .eq("id", editingProduct.id)
+        .select("id")
+        .single();
+
+      productId = editingProduct.id;
+      error = updateError;
+
+      // Optional: delete existing product_images and re-insert fresh set
+      if (!error) {
+        await supabase.from("product_images").delete().eq("product_id", productId);
       }
+    } else {
+      const { data, error: insertError } = await supabase
+        .from("products")
+        .insert([productData])
+        .select("id")
+        .single();
 
-      if (error) {
-        toast({
-          title: "Error",
-          description: error.message || "Failed to save product",
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: "Success",
-          description: editingProduct ? "Product updated successfully!" : "Product added successfully!",
-        });
+      productId = data?.id || null;
+      error = insertError;
+    }
 
-        // Reset form
-        setFormData({
-          name: "",
-          description: "",
-          price: "",
-          originalPrice: "",
-          category: "",
-          gender: "",
-          colors: "",
-          sizes: "",
-          inStock: true,
-          isOnSale: false,
-        });
-        setImageFiles([]);
-        setEditingProduct(null);
-
-        // Refresh products
-        fetchProducts();
-        fetchOrders();
-      }
-    } catch (error: any) {
+    if (error || !productId) {
       toast({
         title: "Error",
-        description: error.message,
+        description: error?.message || "Failed to save product",
         variant: "destructive",
       });
-    } finally {
       setSubmitting(false);
+      return;
     }
-  };
+
+    // Insert all uploaded images into product_images
+    if (imageUrls.length > 0) {
+      const imageRecords = imageUrls.map((url) => ({
+        product_id: productId!,
+        image_url: url,
+      }));
+
+      const { error: imagesError } = await supabase
+        .from("product_images")
+        .insert(imageRecords);
+
+      if (imagesError) {
+        console.error("Product images insert error:", imagesError);
+      }
+    }
+
+    toast({
+      title: "Success",
+      description: editingProduct ? "Product updated successfully!" : "Product added successfully!",
+    });
+
+    // Reset form
+    setFormData({
+      name: "",
+      description: "",
+      price: "",
+      originalPrice: "",
+      category: "",
+      gender: "",
+      colors: "",
+      sizes: "",
+      inStock: true,
+      isOnSale: false,
+    });
+    setImageFiles([]);
+    setEditingProduct(null);
+
+    fetchProducts();
+    fetchOrders();
+  } catch (error: any) {
+    toast({
+      title: "Error",
+      description: error.message,
+      variant: "destructive",
+    });
+  } finally {
+    setSubmitting(false);
+  }
+};
 
   const editProduct = (product: DatabaseProduct) => {
     setEditingProduct(product);
