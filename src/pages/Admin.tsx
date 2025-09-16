@@ -110,25 +110,7 @@ export default function Admin() {
     try {
       const { data, error } = await supabase
         .from("orders")
-        .select(`
-          *,
-          profiles:user_id (
-            full_name,
-            email
-          ),
-          order_items (
-            id,
-            product_id,
-            quantity,
-            price,
-            selected_color,
-            selected_size,
-            products (
-              name,
-              image_url
-            )
-          )
-        `)
+        .select('*')
         .order("created_at", { ascending: false });
 
       if (error) {
@@ -152,7 +134,7 @@ export default function Admin() {
   };
 
   const uploadImages = async (files: File[]): Promise<string[]> => {
-    const uploadPromises = files.map(async (file) => {
+    const uploadPromises = files?.map(async (file) => {
       const fileName = `${Date.now()}-${Math.random()}-${file.name}`;
       const { data, error } = await supabase.storage
         .from("product-images")
@@ -207,11 +189,11 @@ export default function Admin() {
         gender: formData.gender,
         colors: formData.colors
           .split(",")
-          .map((c) => c.trim())
+          ?.map((c) => c.trim())
           .filter((c) => c),
         sizes: formData.sizes
           .split(",")
-          .map((s) => s.trim())
+          ?.map((s) => s.trim())
           .filter((s) => s),
         image_url: imageUrls[0] || null, // Main image
         in_stock: formData.inStock,
@@ -670,7 +652,7 @@ export default function Admin() {
                     
                     <div className="space-y-2">
                       <h4 className="text-sm font-medium text-gray-700">Items:</h4>
-                      {order.order_items.map((item) => (
+                      {order?.order_items?.map((item) => (
                         <div key={item.id} className="flex items-center gap-3 text-sm">
                           <img
                             src={item.products?.image_url || "/placeholder.png"}
