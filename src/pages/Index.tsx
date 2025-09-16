@@ -3,6 +3,7 @@ import Header from '@/components/Header';
 import ProductCard from '@/components/ProductCard';
 import ProductFilters from '@/components/ProductFilters';
 import CartSidebar from '@/components/CartSidebar';
+import CollectionCarousel from '@/components/CollectionCarousel';
 import Loader from '@/components/Loader';
 import { supabase } from '@/integrations/supabase/client';
 import { Product } from '@/types/product';
@@ -94,6 +95,8 @@ const Index = () => {
       <Header />
       
       <main className="container mx-auto px-4 py-8">
+        <CollectionCarousel />
+        
         <ProductFilters
           categories={categories}
           selectedCategory={selectedCategory}
