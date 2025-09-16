@@ -19,6 +19,7 @@ export interface CartItem {
   product: Product;
   quantity: number;
   selectedColor?: string;
+  selectedSize?: string;
 }
 
 export interface Category {

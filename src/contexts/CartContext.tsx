@@ -10,6 +10,7 @@ interface CartState {
 interface AddItemPayload {
   product: Product;
   selectedColor?: string;
+  selectedSize?: string;
   quantity?: number;
 }
 
@@ -25,16 +26,16 @@ type CartAction =
 const cartReducer = (state: CartState, action: CartAction): CartState => {
   switch (action.type) {
     case 'ADD_ITEM': {
-      const itemId = `${action.payload.product.id}-${action.payload.selectedColor}`;
+      const itemId = `${action.payload.product.id}-${action.payload.selectedColor}-${action.payload.selectedSize}`;
       const existingItem = state.items.find(item => 
-        `${item.product.id}-${item.selectedColor}` === itemId
+        `${item.product.id}-${item.selectedColor}-${item.selectedSize}` === itemId
       );
       
       if (existingItem) {
         return {
           ...state,
           items: state.items.map(item =>
-            `${item.product.id}-${item.selectedColor}` === itemId
+            `${item.product.id}-${item.selectedColor}-${item.selectedSize}` === itemId
               ? { ...item, quantity: item.quantity + (action.payload.quantity || 1) }
               : item
           )
@@ -46,7 +47,8 @@ const cartReducer = (state: CartState, action: CartAction): CartState => {
         items: [...state.items, {
           product: action.payload.product,
           quantity: action.payload.quantity || 1,
-          selectedColor: action.payload.selectedColor
+          selectedColor: action.payload.selectedColor,
+          selectedSize: action.payload.selectedSize
         }]
       };
     }
@@ -55,7 +57,7 @@ const cartReducer = (state: CartState, action: CartAction): CartState => {
       return {
         ...state,
         items: state.items.filter(item => 
-          `${item.product.id}-${item.selectedColor}` !== action.payload
+          `${item.product.id}-${item.selectedColor}-${item.selectedSize}` !== action.payload
         ),
       };
 
@@ -64,7 +66,7 @@ const cartReducer = (state: CartState, action: CartAction): CartState => {
         return {
           ...state,
           items: state.items.filter(item => 
-            `${item.product.id}-${item.selectedColor}` !== action.payload.id
+            `${item.product.id}-${item.selectedColor}-${item.selectedSize}` !== action.payload.id
           ),
         };
       }
@@ -72,7 +74,7 @@ const cartReducer = (state: CartState, action: CartAction): CartState => {
       return {
         ...state,
         items: state.items.map(item =>
-          `${item.product.id}-${item.selectedColor}` === action.payload.id
+          `${item.product.id}-${item.selectedColor}-${item.selectedSize}` === action.payload.id
             ? { ...item, quantity: action.payload.quantity }
             : item
         ),
@@ -110,7 +112,7 @@ const cartReducer = (state: CartState, action: CartAction): CartState => {
 
 interface CartContextType {
   state: CartState;
-  addItem: (product: Product, selectedColor?: string, quantity?: number) => void;
+  addItem: (product: Product, selectedColor?: string, selectedSize?: string, quantity?: number) => void;
   removeItem: (id: string) => void;
   updateQuantity: (id: string, quantity: number) => void;
   clearCart: () => void;
@@ -129,10 +131,10 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     isOpen: false,
   });
 
-  const addItem = (product: Product, selectedColor?: string, quantity: number = 1) => {
+  const addItem = (product: Product, selectedColor?: string, selectedSize?: string, quantity: number = 1) => {
     dispatch({
       type: 'ADD_ITEM',
-      payload: { product, selectedColor, quantity }
+      payload: { product, selectedColor, selectedSize, quantity }
     });
     
     toast({

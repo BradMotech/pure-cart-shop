@@ -1,11 +1,13 @@
-import { Star, Heart, Plus, Minus, ZoomIn } from 'lucide-react';
+import { Star, Heart, Plus, Minus, ZoomIn, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Product } from '@/types/product';
 import { useCart } from '@/contexts/CartContext';
 import { useWishlist } from '@/contexts/WishlistContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
-import { useState } from 'react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 
 interface ProductCardProps {
   product: Product;
@@ -17,15 +19,64 @@ const ProductCard = ({ product }: ProductCardProps) => {
   const { user } = useAuth();
   const [quantity, setQuantity] = useState(1);
   const [selectedColor, setSelectedColor] = useState(product.colors?.[0] || '');
+  const [selectedSize, setSelectedSize] = useState(product.sizes?.[0] || '');
+  const [images, setImages] = useState<string[]>([]);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   
   const inWishlist = isInWishlist(product.id);
+
+  useEffect(() => {
+    fetchProductImages();
+  }, [product.id]);
+
+  const fetchProductImages = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('product_images')
+        .select('image_url')
+        .eq('product_id', product.id)
+        .order('sort_order', { ascending: true });
+
+      if (error) {
+        console.error('Error fetching product images:', error);
+        setImages(product.image_url ? [product.image_url] : []);
+        return;
+      }
+
+      const imageUrls = data?.map(img => img.image_url) || [];
+      
+      // If no images in product_images table, use the main product image
+      if (imageUrls.length === 0 && product.image_url) {
+        setImages([product.image_url]);
+      } else {
+        setImages(imageUrls);
+      }
+    } catch (error) {
+      console.error('Error fetching product images:', error);
+      setImages(product.image_url ? [product.image_url] : []);
+    }
+  };
+
+  const currentImage = images[currentImageIndex] || product.image_url || '/placeholder.svg';
+
+  const nextImage = () => {
+    if (images.length > 1) {
+      setCurrentImageIndex((prev) => (prev + 1) % images.length);
+    }
+  };
+
+  const prevImage = () => {
+    if (images.length > 1) {
+      setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length);
+    }
+  };
 
   const handleAddToCart = () => {
     if (!user) {
       window.location.href = '/auth';
       return;
     }
-    addItem(product, selectedColor, quantity);
+    addItem(product, selectedColor, selectedSize, quantity);
   };
 
   const handleWishlistToggle = () => {
@@ -75,7 +126,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
             <DialogContent className="max-w-4xl max-h-[90vh] p-0 border-0 bg-transparent">
               <div className="relative bg-white rounded-lg overflow-hidden shadow-2xl">
                 <img
-                  src={product.image_url || '/placeholder.svg'}
+                  src={currentImage}
                   alt={product.name}
                   className="w-full h-auto max-h-[80vh] object-contain"
                 />
@@ -98,17 +149,73 @@ const ProductCard = ({ product }: ProductCardProps) => {
           </Dialog>
         </div>
         
-        <div className="aspect-[3/4] overflow-hidden">
+        <div className="aspect-[3/4] overflow-hidden relative">
           <img
-            src={product.image_url || '/placeholder.svg'}
+            src={currentImage}
             alt={product.name}
             className="h-full w-full object-cover transition-all duration-500 group-hover:scale-110"
           />
+          
+          {/* Image Navigation */}
+          {images.length > 1 && (
+            <>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  prevImage();
+                }}
+                className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-white/90 hover:bg-white rounded-full p-1.5 shadow-sm opacity-0 group-hover:opacity-100 transition-all duration-300"
+              >
+                <ChevronLeft className="h-4 w-4 text-gray-700" />
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  nextImage();
+                }}
+                className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-white/90 hover:bg-white rounded-full p-1.5 shadow-sm opacity-0 group-hover:opacity-100 transition-all duration-300"
+              >
+                <ChevronRight className="h-4 w-4 text-gray-700" />
+              </button>
+              
+              {/* Image Dots */}
+              <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex space-x-1 opacity-0 group-hover:opacity-100 transition-all duration-300">
+                {images.map((_, index) => (
+                  <button
+                    key={index}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setCurrentImageIndex(index);
+                    }}
+                    className={`w-1.5 h-1.5 rounded-full transition-all duration-200 ${
+                      index === currentImageIndex ? 'bg-white' : 'bg-white/50'
+                    }`}
+                  />
+                ))}
+              </div>
+            </>
+          )}
         </div>
         
         <div className="absolute inset-0 bg-gradient-to-t from-black/0 via-transparent to-transparent group-hover:from-black/10 transition-all duration-300" />
         
-        <div className="absolute bottom-4 left-4 right-4 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0 space-y-3">
+          <div className="absolute bottom-4 left-4 right-4 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0 space-y-3">
+          {/* Size Selector */}
+          {product.sizes && product.sizes.length > 0 && (
+            <Select value={selectedSize} onValueChange={setSelectedSize}>
+              <SelectTrigger className="bg-white/95 border-gray-300 hover:bg-white hover:border-black transition-colors">
+                <SelectValue placeholder="Select size" />
+              </SelectTrigger>
+              <SelectContent>
+                {product.sizes.map((size) => (
+                  <SelectItem key={size} value={size}>
+                    {size}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+          
           {/* Quantity Selector */}
           <div className="flex items-center justify-center space-x-3">
             <Button
