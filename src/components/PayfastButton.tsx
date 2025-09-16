@@ -78,8 +78,13 @@ export const PayfastButton = ({ totalAmount, onSuccess }: PayfastButtonProps) =>
         .single();
 
       // Create Payfast payment form
-      const merchant_id = '10000100'; // Sandbox merchant ID
-      const merchant_key = '46f0cd694581a'; // Sandbox merchant key
+       // Thabanin merchant key and id
+    // Merchant ID: 31303781
+    // Merchant Key: k8jdwm8jgjz5e
+      // const merchant_id = '10000100'; // Sandbox merchant ID
+      // const merchant_key = '46f0cd694581a'; // Sandbox merchant key
+      const merchant_id = '31303781'; // real merchant ID
+      const merchant_key = 'k8jdwm8jgjz5e'; // real merchant key
       const return_url = `${window.location.origin}/payment-success`;
       const cancel_url = `${window.location.origin}/cart`; // unchanged
       const notify_url = `https://tindaknujaloljfthmum.supabase.co/functions/v1/payfast-notify`;
@@ -104,7 +109,8 @@ export const PayfastButton = ({ totalAmount, onSuccess }: PayfastButtonProps) =>
       // Create and submit form
       const form = document.createElement('form');
       form.method = 'POST';
-      form.action = 'https://sandbox.payfast.co.za/eng/process'; // Use production URL for live
+      // form.action = 'https://sandbox.payfast.co.za/eng/process'; // Use production URL for live
+      form.action = 'https://www.payfast.co.za/eng/process'; // Use production URL for live
       
       Object.entries(paymentData).forEach(([key, value]) => {
         if (value) {

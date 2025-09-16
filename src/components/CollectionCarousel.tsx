@@ -221,9 +221,9 @@ const CollectionCarousel = () => {
       )}
 
       {/* Website URL */}
-      <div className="absolute top-4 right-4 text-xs opacity-60 font-light tracking-wider">
+      <div className="absolute top-4 right-4 text-xs opacity-60 font-light tracking-wider text-white">
         FOR MORE<br />
-        www.yoursite.com
+        www.yewa.co.za
       </div>
     </div>
   );
