@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { ChevronLeft, ChevronRight, Facebook, Instagram, Twitter, Linkedin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
@@ -20,10 +20,40 @@ const CollectionCarousel = () => {
   const [collections, setCollections] = useState<Collection[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [isVisible, setIsVisible] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
+  const carouselRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     fetchCollections();
   }, []);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      const carouselElement = carouselRef.current;
+      
+      if (!carouselElement) return;
+      
+      const carouselBottom = carouselElement.offsetTop + carouselElement.offsetHeight;
+      const scrollingDown = currentScrollY > lastScrollY;
+      const scrollingUp = currentScrollY < lastScrollY;
+      
+      // Show carousel when at top or scrolling up and near the carousel
+      if (currentScrollY < 100 || (scrollingUp && currentScrollY < carouselBottom + 200)) {
+        setIsVisible(true);
+      }
+      // Hide carousel when scrolling down and past it
+      else if (scrollingDown && currentScrollY > carouselBottom) {
+        setIsVisible(false);
+      }
+      
+      setLastScrollY(currentScrollY);
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [lastScrollY]);
 
   useEffect(() => {
     if (collections.length > 1) {
@@ -70,14 +100,24 @@ const CollectionCarousel = () => {
 
   if (loading || collections.length === 0) {
     return (
-      <div className="w-full h-[400px] bg-gradient-to-r from-gray-200 to-gray-300 animate-pulse rounded-lg mb-8" />
+      <div 
+        ref={carouselRef}
+        className={`w-full h-[400px] bg-gradient-to-r from-gray-200 to-gray-300 animate-pulse rounded-lg mb-8 transition-all duration-500 ease-in-out ${
+          isVisible ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0'
+        }`} 
+      />
     );
   }
 
   const currentCollection = collections[currentIndex];
 
   return (
-    <div className="relative w-full h-[400px] mb-8 overflow-hidden rounded-lg shadow-lg group">
+    <div 
+      ref={carouselRef}
+      className={`relative w-full h-[400px] mb-8 overflow-hidden rounded-lg shadow-lg group transition-all duration-500 ease-in-out ${
+        isVisible ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0'
+      }`}
+    >
       {/* Main Carousel Content */}
       <div 
         className="w-full h-full flex items-center justify-between px-8 relative"
