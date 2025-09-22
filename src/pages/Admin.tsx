@@ -796,6 +796,27 @@ export default function Admin() {
                       </div>
                     </div>
                     
+                    {/* Delivery Details */}
+                    {(order.delivery_address || order.delivery_city || order.delivery_phone || order.delivery_email) && (
+                      <div className="bg-gray-50 p-3 rounded-lg space-y-1">
+                        <h4 className="text-sm font-medium text-gray-700 mb-2">Delivery Details</h4>
+                        {order.delivery_email && (
+                          <p className="text-sm text-gray-600"><span className="font-medium">Email:</span> {order.delivery_email}</p>
+                        )}
+                        {order.delivery_phone && (
+                          <p className="text-sm text-gray-600"><span className="font-medium">Phone:</span> {order.delivery_phone}</p>
+                        )}
+                        {order.delivery_address && (
+                          <p className="text-sm text-gray-600"><span className="font-medium">Address:</span> {order.delivery_address}</p>
+                        )}
+                        {(order.delivery_city || order.delivery_province || order.delivery_postal_code) && (
+                          <p className="text-sm text-gray-600">
+                            <span className="font-medium">Location:</span> {[order.delivery_city, order.delivery_province, order.delivery_postal_code].filter(Boolean).join(', ')}
+                          </p>
+                        )}
+                      </div>
+                    )}
+                    
                     <div className="space-y-2">
                       <h4 className="text-sm font-medium text-gray-700">Items:</h4>
                       {order?.order_items?.map((item) => (
