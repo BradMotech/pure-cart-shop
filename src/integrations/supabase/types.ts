@@ -86,8 +86,9 @@ export type Database = {
           id: string
           order_id: string
           price: number
-          product_image?: string
           product_id: string
+          product_image: string | null
+          product_name: string | null
           quantity: number
           selected_color: string | null
           selected_size: string | null
@@ -98,7 +99,8 @@ export type Database = {
           order_id: string
           price: number
           product_id: string
-          product_image?: string
+          product_image?: string | null
+          product_name?: string | null
           quantity?: number
           selected_color?: string | null
           selected_size?: string | null
@@ -109,7 +111,8 @@ export type Database = {
           order_id?: string
           price?: number
           product_id?: string
-          product_image?: string
+          product_image?: string | null
+          product_name?: string | null
           quantity?: number
           selected_color?: string | null
           selected_size?: string | null
@@ -134,32 +137,50 @@ export type Database = {
       orders: {
         Row: {
           created_at: string | null
+          delivery_address: string | null
+          delivery_city: string | null
+          delivery_email: string | null
+          delivery_phone: string | null
+          delivery_postal_code: string | null
+          delivery_province: string | null
+          email: string | null
           id: string
           payment_id: string | null
+          products: Json[] | null
           status: string | null
-          email: string | null
           total_amount: number
-          products?: []
           updated_at: string | null
           user_id: string
         }
         Insert: {
           created_at?: string | null
+          delivery_address?: string | null
+          delivery_city?: string | null
+          delivery_email?: string | null
+          delivery_phone?: string | null
+          delivery_postal_code?: string | null
+          delivery_province?: string | null
+          email?: string | null
           id?: string
           payment_id?: string | null
+          products?: Json[] | null
           status?: string | null
-          email: string | null
           total_amount: number
-          products?: []
           updated_at?: string | null
           user_id: string
         }
         Update: {
           created_at?: string | null
+          delivery_address?: string | null
+          delivery_city?: string | null
+          delivery_email?: string | null
+          delivery_phone?: string | null
+          delivery_postal_code?: string | null
+          delivery_province?: string | null
+          email?: string | null
           id?: string
           payment_id?: string | null
-          email: string | null
-          products?: []
+          products?: Json[] | null
           status?: string | null
           total_amount?: number
           updated_at?: string | null

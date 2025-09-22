@@ -20,6 +20,14 @@ interface Order {
   total_amount: number;
   status: string;
   created_at: string;
+  email?: string | null;
+  products?: any[] | null;
+  delivery_phone?: string | null;
+  delivery_email?: string | null;
+  delivery_address?: string | null;
+  delivery_city?: string | null;
+  delivery_province?: string | null;
+  delivery_postal_code?: string | null;
 }
 
 export default function Account() {
@@ -197,9 +205,9 @@ export default function Account() {
                       className="flex items-center justify-between p-3 border rounded-lg"
                     >
                       <div>
-                        <p className="font-medium">{order?.email as any}</p>
-                        {order?.products?.length > 0 &&
-                          order.products.map((item, index) => (
+                        <p className="font-medium">{order.email || 'No email'}</p>
+                        {order.products && order.products.length > 0 &&
+                          order.products.map((item: any, index) => (
                             <>
                             <p key={index} className="font-medium">
                               Item: {item?.product?.name}

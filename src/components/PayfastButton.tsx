@@ -9,9 +9,17 @@ import { CreditCard } from 'lucide-react';
 interface PayfastButtonProps {
   totalAmount: number;
   onSuccess?: () => void;
+  deliveryDetails?: {
+    phone: string;
+    email: string;
+    address: string;
+    city: string;
+    province: string;
+    postalCode: string;
+  } | null;
 }
 
-export const PayfastButton = ({ totalAmount, onSuccess }: PayfastButtonProps) => {
+export const PayfastButton = ({ totalAmount, onSuccess, deliveryDetails }: PayfastButtonProps) => {
   const { user } = useAuth();
   const { state, clearCart } = useCart();
   const [processing, setProcessing] = useState(false);
@@ -46,7 +54,13 @@ export const PayfastButton = ({ totalAmount, onSuccess }: PayfastButtonProps) =>
           email: user.email,
           products: state.items,
           total_amount: totalAmount,
-          status: 'pending'
+          status: 'pending',
+          delivery_phone: deliveryDetails?.phone,
+          delivery_email: deliveryDetails?.email,
+          delivery_address: deliveryDetails?.address,
+          delivery_city: deliveryDetails?.city,
+          delivery_province: deliveryDetails?.province,
+          delivery_postal_code: deliveryDetails?.postalCode
         }])
         .select()
         .single();
@@ -149,12 +163,12 @@ export const PayfastButton = ({ totalAmount, onSuccess }: PayfastButtonProps) =>
   return (
     <Button 
       onClick={handlePayment} 
-      disabled={processing || state.items.length === 0}
+      disabled={processing || state.items.length === 0 || !deliveryDetails}
       className="w-full"
       size="lg"
     >
       <CreditCard className="w-5 h-5 mr-2" />
-      {processing ? 'Processing...' : `Pay R${totalAmount.toFixed(2)} with Payfast`}
+      {processing ? 'Processing...' : !deliveryDetails ? 'Complete delivery details first' : `Pay R${totalAmount.toFixed(2)} with Payfast`}
     </Button>
   );
 };

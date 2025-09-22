@@ -5,6 +5,17 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import Header from '@/components/Header';
 import { PayfastButton } from '@/components/PayfastButton';
+import { DeliveryForm } from '@/components/DeliveryForm';
+import { useState } from 'react';
+
+interface DeliveryDetails {
+  phone: string;
+  email: string;
+  address: string;
+  city: string;
+  province: string;
+  postalCode: string;
+}
 
 const Cart = () => {
   const navigate = useNavigate();
@@ -16,6 +27,12 @@ const Cart = () => {
     clearCart, 
     totalPrice 
   } = useCart();
+
+  const [deliveryDetails, setDeliveryDetails] = useState<DeliveryDetails | null>(null);
+
+  const handleDeliveryUpdate = (details: DeliveryDetails) => {
+    setDeliveryDetails(details);
+  };
 
   if (!user) {
     return (
@@ -66,78 +83,89 @@ const Cart = () => {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Cart Items */}
             <div className="lg:col-span-2 space-y-6">
-              {state.items.map((item) => {
-                const itemId = `${item.product.id}-${item.selectedColor}`;
-                
-                return (
-                  <div key={itemId} className="bg-shop-surface p-6 rounded-sm border border-shop-border">
-                    <div className="flex space-x-6">
-                      <div className="h-24 w-20 flex-shrink-0 overflow-hidden rounded bg-shop-background">
-          <img
-            src={item.product.image_url || '/placeholder.svg'}
-            alt={item.product.name}
-            className="h-full w-full object-cover"
-          />
-                      </div>
+              {/* Delivery Details Form */}
+              <DeliveryForm 
+                onDeliveryUpdate={handleDeliveryUpdate}
+                initialValues={{
+                  email: user?.email || ''
+                }}
+              />
 
-                      <div className="flex flex-1 flex-col">
-                        <div className="flex justify-between">
-                          <div>
-                            <h3 className="text-lg font-medium text-shop-text">
-                              {item.product.name}
-                            </h3>
-                            {item.selectedColor && (
-                              <p className="text-sm text-shop-text-light capitalize mt-1">
-                                Color: {item.selectedColor}
-                              </p>
-                            )}
-                            <p className="text-lg font-medium text-shop-text mt-2">
-                              R{item.product.price}
-                            </p>
-                          </div>
-                          
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => removeItem(itemId)}
-                            className="text-destructive hover:text-destructive/80"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
+              {/* Cart Items List */}
+              <div className="space-y-6">
+                {state.items.map((item) => {
+                  const itemId = `${item.product.id}-${item.selectedColor}`;
+                  
+                  return (
+                    <div key={itemId} className="bg-shop-surface p-6 rounded-sm border border-shop-border">
+                      <div className="flex space-x-6">
+                        <div className="h-24 w-20 flex-shrink-0 overflow-hidden rounded bg-shop-background">
+                          <img
+                            src={item.product.image_url || '/placeholder.svg'}
+                            alt={item.product.name}
+                            className="h-full w-full object-cover"
+                          />
                         </div>
 
-                        <div className="flex items-center justify-between mt-4">
-                          <div className="flex items-center space-x-3">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => updateQuantity(itemId, item.quantity - 1)}
-                              className="h-8 w-8 p-0"
-                            >
-                              <Minus className="h-3 w-3" />
-                            </Button>
+                        <div className="flex flex-1 flex-col">
+                          <div className="flex justify-between">
+                            <div>
+                              <h3 className="text-lg font-medium text-shop-text">
+                                {item.product.name}
+                              </h3>
+                              {item.selectedColor && (
+                                <p className="text-sm text-shop-text-light capitalize mt-1">
+                                  Color: {item.selectedColor}
+                                </p>
+                              )}
+                              <p className="text-lg font-medium text-shop-text mt-2">
+                                R{item.product.price}
+                              </p>
+                            </div>
                             
-                            <span className="w-12 text-center">{item.quantity}</span>
-                            
                             <Button
-                              variant="outline"
+                              variant="ghost"
                               size="sm"
-                              onClick={() => updateQuantity(itemId, item.quantity + 1)}
-                              className="h-8 w-8 p-0"
+                              onClick={() => removeItem(itemId)}
+                              className="text-destructive hover:text-destructive/80"
                             >
-                              <Plus className="h-3 w-3" />
+                              <Trash2 className="h-4 w-4" />
                             </Button>
                           </div>
 
-                          <div className="text-lg font-medium">
-                            R{(item.product.price * item.quantity).toFixed(2)}
+                          <div className="flex items-center justify-between mt-4">
+                            <div className="flex items-center space-x-3">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => updateQuantity(itemId, item.quantity - 1)}
+                                className="h-8 w-8 p-0"
+                              >
+                                <Minus className="h-3 w-3" />
+                              </Button>
+                              
+                              <span className="w-12 text-center">{item.quantity}</span>
+                              
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => updateQuantity(itemId, item.quantity + 1)}
+                                className="h-8 w-8 p-0"
+                              >
+                                <Plus className="h-3 w-3" />
+                              </Button>
+                            </div>
+
+                            <div className="text-lg font-medium">
+                              R{(item.product.price * item.quantity).toFixed(2)}
+                            </div>
                           </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
 
               <div className="pt-4">
                 <Button 
@@ -181,6 +209,7 @@ const Cart = () => {
 
                 <PayfastButton 
                   totalAmount={totalPrice + (totalPrice >= 999 ? 0 : 110)}
+                  deliveryDetails={deliveryDetails}
                 />
               </div>
             </div>

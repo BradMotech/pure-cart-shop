@@ -44,6 +44,14 @@ interface Order {
   payment_id: string | null;
   created_at: string;
   updated_at: string;
+  email?: string | null;
+  products?: any[] | null;
+  delivery_phone?: string | null;
+  delivery_email?: string | null;
+  delivery_address?: string | null;
+  delivery_city?: string | null;
+  delivery_province?: string | null;
+  delivery_postal_code?: string | null;
   profiles: {
     full_name: string | null;
     email: string | null;
@@ -754,9 +762,9 @@ export default function Admin() {
                   >
                     <div className="flex justify-between items-start">
                       <div>
-                         <p className="font-medium">{order?.email as any}</p>
-                        {order?.products?.length > 0 &&
-                          order.products.map((item, index) => (
+                         <p className="font-medium">{order.email || 'No email'}</p>
+                        {order.products && order.products.length > 0 &&
+                          order.products.map((item: any, index) => (
                             <>
                             <p key={index} className="font-medium">
                               Item: {item?.product?.name}

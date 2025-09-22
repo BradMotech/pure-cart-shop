@@ -23,9 +23,14 @@ const Header = () => {
           <div className="flex items-center space-x-12">
             <button 
               onClick={() => navigate('/')}
-              className="text-2xl font-light text-black hover:text-gray-600 transition-colors tracking-wide"
+              className="text-2xl font-light text-black hover:text-gray-600 transition-colors tracking-wide flex items-center space-x-3"
             >
-              YEWA
+              <img 
+                src="/yewa-favicon.jpg" 
+                alt="YEWA Logo" 
+                className="h-8 w-8 object-cover"
+              />
+              <span>YEWA</span>
             </button>
             
             <nav className="hidden md:flex items-center space-x-8">
