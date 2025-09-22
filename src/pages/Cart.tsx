@@ -94,7 +94,7 @@ const Cart = () => {
               {/* Cart Items List */}
               <div className="space-y-6">
                 {state.items.map((item) => {
-                  const itemId = `${item.product.id}-${item.selectedColor}`;
+                  const itemId = `${item.product.id}-${item.selectedColor}-${item.selectedSize}`;
                   
                   return (
                     <div key={itemId} className="bg-shop-surface p-6 rounded-sm border border-shop-border">
