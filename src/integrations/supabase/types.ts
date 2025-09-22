@@ -86,6 +86,7 @@ export type Database = {
           id: string
           order_id: string
           price: number
+          product_image?: string
           product_id: string
           quantity: number
           selected_color: string | null
@@ -97,6 +98,7 @@ export type Database = {
           order_id: string
           price: number
           product_id: string
+          product_image?: string
           quantity?: number
           selected_color?: string | null
           selected_size?: string | null
@@ -107,6 +109,7 @@ export type Database = {
           order_id?: string
           price?: number
           product_id?: string
+          product_image?: string
           quantity?: number
           selected_color?: string | null
           selected_size?: string | null
@@ -134,7 +137,9 @@ export type Database = {
           id: string
           payment_id: string | null
           status: string | null
+          email: string | null
           total_amount: number
+          products?: []
           updated_at: string | null
           user_id: string
         }
@@ -143,7 +148,9 @@ export type Database = {
           id?: string
           payment_id?: string | null
           status?: string | null
+          email: string | null
           total_amount: number
+          products?: []
           updated_at?: string | null
           user_id: string
         }
@@ -151,6 +158,8 @@ export type Database = {
           created_at?: string | null
           id?: string
           payment_id?: string | null
+          email: string | null
+          products?: []
           status?: string | null
           total_amount?: number
           updated_at?: string | null

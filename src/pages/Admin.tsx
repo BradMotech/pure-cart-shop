@@ -122,6 +122,7 @@ export default function Admin() {
         });
       } else {
         setOrders(data || []);
+        console.log('orders : ', data)
       }
     } catch (error: any) {
       console.error("Orders fetch exception:", error);
@@ -753,6 +754,18 @@ export default function Admin() {
                   >
                     <div className="flex justify-between items-start">
                       <div>
+                         <p className="font-medium">{order?.email as any}</p>
+                        {order?.products?.length > 0 &&
+                          order.products.map((item, index) => (
+                            <>
+                            <p key={index} className="font-medium">
+                              Item: {item?.product?.name}
+                            </p>
+                            <p key={index} className="font-medium">
+                              Price: R {item?.product?.price}
+                            </p>
+                            </>
+                          ))}
                         <h3 className="font-medium">Order #{order.id.slice(0, 8)}</h3>
                         <p className="text-sm text-gray-600">
                           {order.profiles?.full_name || 'Unknown'} ({order.profiles?.email || 'No email'})

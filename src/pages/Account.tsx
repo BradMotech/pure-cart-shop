@@ -88,6 +88,7 @@ export default function Account() {
       });
     } else {
       setOrders(data || []);
+      console.warn(data)
     }
   };
 
@@ -158,11 +159,11 @@ export default function Account() {
                 <Input
                   id="email"
                   type="email"
-                  value={profile?.email || ''}
+                  value={profile?.email || ""}
                   disabled
                 />
               </div>
-              
+
               <div className="space-y-2">
                 <Label htmlFor="fullName">Full Name</Label>
                 <Input
@@ -171,9 +172,9 @@ export default function Account() {
                   onChange={(e) => setFullName(e.target.value)}
                 />
               </div>
-              
+
               <Button onClick={updateProfile} disabled={updating}>
-                {updating ? 'Updating...' : 'Update Profile'}
+                {updating ? "Updating..." : "Update Profile"}
               </Button>
             </CardContent>
           </Card>
@@ -191,16 +192,36 @@ export default function Account() {
               ) : (
                 <div className="space-y-3">
                   {orders.map((order) => (
-                    <div key={order.id} className="flex items-center justify-between p-3 border rounded-lg">
+                    <div
+                      key={order.id}
+                      className="flex items-center justify-between p-3 border rounded-lg"
+                    >
                       <div>
-                        <p className="font-medium">Order #{order.id.slice(0, 8)}</p>
+                        <p className="font-medium">{order?.email as any}</p>
+                        {order?.products?.length > 0 &&
+                          order.products.map((item, index) => (
+                            <>
+                            <p key={index} className="font-medium">
+                              Item: {item?.product?.name}
+                            </p>
+                            <p key={index} className="font-medium">
+                              Price: R {item?.product?.price}
+                            </p>
+                            </>
+                          ))}
+
+                        <p className="font-medium">
+                          Order #{order.id.slice(0, 8)}
+                        </p>
                         <p className="text-sm text-muted-foreground">
                           {new Date(order.created_at).toLocaleDateString()}
                         </p>
                       </div>
                       <div className="text-right">
                         <p className="font-medium">R{order.total_amount}</p>
-                        <p className="text-sm text-muted-foreground capitalize">{order.status}</p>
+                        <p className="text-sm text-muted-foreground capitalize">
+                          {order.status}
+                        </p>
                       </div>
                     </div>
                   ))}
@@ -220,13 +241,22 @@ export default function Account() {
             </CardHeader>
             <CardContent>
               <div className="flex flex-wrap gap-4">
-                <Button variant="outline" onClick={() => window.location.href = '/wishlist'}>
+                <Button
+                  variant="outline"
+                  onClick={() => (window.location.href = "/wishlist")}
+                >
                   View Wishlist
                 </Button>
-                <Button variant="outline" onClick={() => window.location.href = '/cart'}>
+                <Button
+                  variant="outline"
+                  onClick={() => (window.location.href = "/cart")}
+                >
                   View Cart
                 </Button>
-                <Button variant="outline" onClick={() => window.location.href = '/'}>
+                <Button
+                  variant="outline"
+                  onClick={() => (window.location.href = "/")}
+                >
                   Continue Shopping
                 </Button>
               </div>

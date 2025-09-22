@@ -181,12 +181,14 @@ const CollectionCarousel = () => {
         {collections.length > 1 && (
           <>
             <button
+            style={{zIndex:999999999999}}
               onClick={prevSlide}
               className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white/20 backdrop-blur-sm rounded-full p-2 hover:bg-white/30 transition-all duration-200 opacity-0 group-hover:opacity-100"
             >
               <ChevronLeft className="w-6 h-6" />
             </button>
             <button
+            style={{zIndex:999999999999}}
               onClick={nextSlide}
               className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white/20 backdrop-blur-sm rounded-full p-2 hover:bg-white/30 transition-all duration-200 opacity-0 group-hover:opacity-100"
             >

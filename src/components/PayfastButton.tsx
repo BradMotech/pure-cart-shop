@@ -43,6 +43,8 @@ export const PayfastButton = ({ totalAmount, onSuccess }: PayfastButtonProps) =>
         .from('orders')
         .insert([{
           user_id: user.id,
+          email: user.email,
+          products: state.items,
           total_amount: totalAmount,
           status: 'pending'
         }])
@@ -57,6 +59,8 @@ export const PayfastButton = ({ totalAmount, onSuccess }: PayfastButtonProps) =>
       const orderItems = state.items.map(item => ({
         order_id: order.id,
         product_id: item.product.id,
+        product_name: item.product.name,
+        product_image: item.product.image_url,
         quantity: item.quantity,
         price: item.product.price,
         selected_color: item.selectedColor
