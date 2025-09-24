@@ -63,6 +63,8 @@ interface Order {
     price: number;
     selected_color: string | null;
     selected_size: string | null;
+    product_name: string | null;
+    product_image: string | null;
     products: {
       name: string;
       image_url: string | null;
@@ -1137,36 +1139,19 @@ export default function Admin() {
                   >
                     <div className="flex justify-between items-start">
                       <div>
-                         <p className="font-medium">{order.email || 'No email'}</p>
-                        {order.products && order.products.length > 0 &&
-                          order.products.map((item: any, index) => (
-                            <>
-                            <p key={index} className="font-medium">
-                              Item: {item?.product?.name}
-                            </p>
-                            <p key={index} className="font-medium">
-                              Price: R {item?.product?.price}
-                            </p>
-                            </>
-                          ))}
                         <h3 className="font-medium">Order #{order.id.slice(0, 8)}</h3>
-                        <p className="text-sm text-gray-600">
-                          {order.profiles?.full_name || 'Unknown'} ({order.profiles?.email || 'No email'})
-                        </p>
+                        <p className="text-sm text-gray-600">{order.email || 'No email'}</p>
                         <p className="text-sm text-gray-500">
                           {new Date(order.created_at).toLocaleDateString()} at {new Date(order.created_at).toLocaleTimeString()}
+                        </p>
+                        <p className="text-sm text-gray-600">
+                          Items: {order?.order_items?.reduce((total, item) => total + item.quantity, 0) || 0}
                         </p>
                       </div>
                       <div className="text-right">
                         <p className="font-medium">R{order.total_amount}</p>
-                        <span className={`px-2 py-1 rounded text-xs ${
-                          order.status === 'paid' 
-                            ? 'bg-green-100 text-green-800' 
-                            : order.status === 'pending'
-                            ? 'bg-yellow-100 text-yellow-800'
-                            : 'bg-red-100 text-red-800'
-                        }`}>
-                          {order.status}
+                        <span className="px-2 py-1 rounded text-xs bg-green-100 text-green-800">
+                          Paid
                         </span>
                       </div>
                     </div>
@@ -1193,20 +1178,23 @@ export default function Admin() {
                     )}
                     
                     <div className="space-y-2">
-                      <h4 className="text-sm font-medium text-gray-700">Items:</h4>
+                      <h4 className="text-sm font-medium text-gray-700">Items ({order?.order_items?.length || 0}):</h4>
                       {order?.order_items?.map((item) => (
                         <div key={item.id} className="flex items-center gap-3 text-sm">
                           <img
                             src={item.products?.image_url || "/placeholder.png"}
-                            alt={item.products?.name || 'Product'}
+                            alt={item.products?.name || item.product_name || 'Product'}
                             className="w-12 h-12 object-cover rounded"
                           />
                           <div className="flex-1">
-                            <p className="font-medium">{item.products?.name}</p>
+                            <p className="font-medium">{item.products?.name || item.product_name}</p>
                             <p className="text-gray-500">
-                              Qty: {item.quantity} • R{item.price}
-                              {item.selected_color && ` • ${item.selected_color}`}
-                              {item.selected_size && ` • ${item.selected_size}`}
+                              Quantity: {item.quantity} • R{item.price} each
+                              {item.selected_color && ` • Color: ${item.selected_color}`}
+                              {item.selected_size && ` • Size: ${item.selected_size}`}
+                            </p>
+                            <p className="text-xs text-gray-400">
+                              Subtotal: R{(item.quantity * item.price).toFixed(2)}
                             </p>
                           </div>
                         </div>
