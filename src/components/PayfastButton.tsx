@@ -46,47 +46,19 @@ export const PayfastButton = ({ totalAmount, onSuccess, deliveryDetails }: Payfa
     setProcessing(true);
 
     try {
-      // Create order in database
-      const { data: order, error: orderError } = await supabase
-        .from('orders')
-        .insert([{
-          user_id: user.id,
-          email: user.email,
-          products: state.items,
-          total_amount: totalAmount,
-          status: 'pending',
-          delivery_phone: deliveryDetails?.phone,
-          delivery_email: deliveryDetails?.email,
-          delivery_address: deliveryDetails?.address,
-          delivery_city: deliveryDetails?.city,
-          delivery_province: deliveryDetails?.province,
-          delivery_postal_code: deliveryDetails?.postalCode
-        }])
-        .select()
-        .single();
+      // Store cart data and delivery details in localStorage for processing after payment
+      const orderData = {
+        user_id: user.id,
+        email: user.email,
+        cartItems: state.items,
+        totalAmount: totalAmount,
+        deliveryDetails: deliveryDetails
+      };
+      
+      localStorage.setItem('pending_order', JSON.stringify(orderData));
 
-      if (orderError) {
-        throw orderError;
-      }
-
-      // Create order items
-      const orderItems = state.items.map(item => ({
-        order_id: order.id,
-        product_id: item.product.id,
-        product_name: item.product.name,
-        product_image: item.product.image_url,
-        quantity: item.quantity,
-        price: item.product.price,
-        selected_color: item.selectedColor
-      }));
-
-      const { error: itemsError } = await supabase
-        .from('order_items')
-        .insert(orderItems);
-
-      if (itemsError) {
-        throw itemsError;
-      }
+      // Generate a temporary order ID for payment tracking
+      const tempOrderId = `temp_${Date.now()}_${user.id}`;
 
       // Get user's profile for payment details
       const { data: profile } = await supabase
@@ -116,12 +88,12 @@ export const PayfastButton = ({ totalAmount, onSuccess, deliveryDetails }: Payfa
         name_first: profile?.full_name?.split(' ')[0] || 'Customer',
         name_last: profile?.full_name?.split(' ').slice(1).join(' ') || '',
         email_address: user.email || '',
-        m_payment_id: order.id,
+        m_payment_id: tempOrderId,
         amount: totalAmount.toFixed(2),
-        item_name: `Order #${order.id.slice(0, 8)}`,
+        item_name: `Order #${tempOrderId.slice(0, 8)}`,
         item_description: `${state.items.length} items from YW Clothing Store`,
         custom_str1: user.id,
-        custom_str2: order.id
+        custom_str2: tempOrderId
       };
 
       // Create and submit form

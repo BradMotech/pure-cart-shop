@@ -17,7 +17,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "@/hooks/use-toast";
 import { Navigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Trash2, Upload } from "lucide-react";
+import { Trash2, Upload, Palette, Edit, Plus } from "lucide-react";
 
 interface DatabaseProduct {
   id: string;
@@ -70,10 +70,24 @@ interface Order {
   }[];
 }
 
+interface Collection {
+  id: string;
+  title: string;
+  description: string;
+  image_url: string;
+  background_color: string;
+  text_color: string;
+  button_text: string;
+  button_url: string;
+  is_active: boolean;
+  sort_order: number;
+}
+
 export default function Admin() {
   const { user, isAdmin, loading } = useAuth();
   const [products, setProducts] = useState<DatabaseProduct[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
+  const [collections, setCollections] = useState<Collection[]>([]);
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -86,14 +100,26 @@ export default function Admin() {
     inStock: true,
     isOnSale: false,
   });
+  const [collectionForm, setCollectionForm] = useState({
+    title: "",
+    description: "",
+    background_color: "#ff6b6b",
+    text_color: "#ffffff",
+    button_text: "Shop Now",
+    button_url: "/",
+    image_url: "",
+    sort_order: 0
+  });
   const [imageFiles, setImageFiles] = useState<File[]>([]);
   const [editingProduct, setEditingProduct] = useState<DatabaseProduct | null>(null);
+  const [editingCollection, setEditingCollection] = useState<Collection | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     if (isAdmin) {
       fetchProducts();
       fetchOrders();
+      fetchCollections();
     }
   }, [isAdmin]);
 
@@ -137,6 +163,33 @@ export default function Admin() {
       toast({
         title: "Error",
         description: `Failed to fetch orders: ${error.message}`,
+        variant: "destructive",
+      });
+    }
+  };
+
+  const fetchCollections = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('collections')
+        .select('*')
+        .order('sort_order', { ascending: true });
+
+      if (error) {
+        console.error('Collections fetch error:', error);
+        toast({
+          title: "Error",
+          description: `Failed to fetch collections: ${error.message}`,
+          variant: "destructive",
+        });
+      } else {
+        setCollections(data || []);
+      }
+    } catch (error: any) {
+      console.error('Collections fetch exception:', error);
+      toast({
+        title: "Error",
+        description: `Failed to fetch collections: ${error.message}`,
         variant: "destructive",
       });
     }
@@ -444,6 +497,122 @@ export default function Admin() {
     }
   };
 
+  const handleCollectionSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubmitting(true);
+
+    try {
+      const collectionData = {
+        title: collectionForm.title,
+        description: collectionForm.description,
+        background_color: collectionForm.background_color,
+        text_color: collectionForm.text_color,
+        button_text: collectionForm.button_text,
+        button_url: collectionForm.button_url,
+        image_url: collectionForm.image_url,
+        sort_order: collectionForm.sort_order,
+        is_active: true
+      };
+
+      let error;
+      if (editingCollection) {
+        const { error: updateError } = await supabase
+          .from('collections')
+          .update(collectionData)
+          .eq('id', editingCollection.id);
+        error = updateError;
+      } else {
+        const { error: insertError } = await supabase
+          .from('collections')
+          .insert([collectionData]);
+        error = insertError;
+      }
+
+      if (error) {
+        toast({
+          title: "Error",
+          description: error.message || "Failed to save collection",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Success",
+          description: editingCollection ? "Collection updated successfully!" : "Collection added successfully!",
+        });
+
+        setCollectionForm({
+          title: "",
+          description: "",
+          background_color: "#ff6b6b",
+          text_color: "#ffffff",
+          button_text: "Shop Now",
+          button_url: "/",
+          image_url: "",
+          sort_order: 0
+        });
+        setEditingCollection(null);
+        fetchCollections();
+      }
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const editCollection = (collection: Collection) => {
+    setEditingCollection(collection);
+    setCollectionForm({
+      title: collection.title,
+      description: collection.description,
+      background_color: collection.background_color,
+      text_color: collection.text_color,
+      button_text: collection.button_text,
+      button_url: collection.button_url,
+      image_url: collection.image_url,
+      sort_order: collection.sort_order
+    });
+  };
+
+  const deleteCollection = async (id: string) => {
+    const { error } = await supabase.from('collections').delete().eq('id', id);
+
+    if (error) {
+      toast({
+        title: "Error",
+        description: "Failed to delete collection",
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "Success",
+        description: "Collection deleted successfully",
+      });
+      fetchCollections();
+    }
+  };
+
+  const toggleCollectionActive = async (id: string, currentStatus: boolean) => {
+    const { error } = await supabase
+      .from('collections')
+      .update({ is_active: !currentStatus })
+      .eq('id', id);
+
+    if (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update collection status",
+        variant: "destructive",
+      });
+    } else {
+      fetchCollections();
+    }
+  };
+
   if (loading) {
     return <Loader fullScreen text="Loading admin panel..." />;
   }
@@ -475,8 +644,9 @@ export default function Admin() {
         <h1 className="text-3xl font-light mb-8">Admin Dashboard</h1>
 
         <Tabs defaultValue="products" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="products">Products</TabsTrigger>
+            <TabsTrigger value="collections">Carousel</TabsTrigger>
             <TabsTrigger value="orders">Orders ({orders.length})</TabsTrigger>
           </TabsList>
 
@@ -741,6 +911,211 @@ export default function Admin() {
                 ))}
               </div>
             </CardContent> */}
+          </Card>
+        </div>
+      </TabsContent>
+
+      <TabsContent value="collections" className="space-y-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <Card>
+            <CardHeader>
+              <CardTitle>{editingCollection ? 'Edit Collection' : 'Add New Collection'}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleCollectionSubmit} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="collection-title">Collection Title</Label>
+                  <Input
+                    id="collection-title"
+                    value={collectionForm.title}
+                    onChange={(e) => setCollectionForm({ ...collectionForm, title: e.target.value })}
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="collection-description">Description</Label>
+                  <Textarea
+                    id="collection-description"
+                    value={collectionForm.description}
+                    onChange={(e) => setCollectionForm({ ...collectionForm, description: e.target.value })}
+                    rows={2}
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="bg-color">Background Color</Label>
+                    <div className="flex gap-2">
+                      <Input
+                        id="bg-color"
+                        type="color"
+                        value={collectionForm.background_color}
+                        onChange={(e) => setCollectionForm({ ...collectionForm, background_color: e.target.value })}
+                        className="w-16 h-10"
+                      />
+                      <Input
+                        value={collectionForm.background_color}
+                        onChange={(e) => setCollectionForm({ ...collectionForm, background_color: e.target.value })}
+                        placeholder="#ff6b6b"
+                        className="flex-1"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="text-color">Text Color</Label>
+                    <div className="flex gap-2">
+                      <Input
+                        id="text-color"
+                        type="color"
+                        value={collectionForm.text_color}
+                        onChange={(e) => setCollectionForm({ ...collectionForm, text_color: e.target.value })}
+                        className="w-16 h-10"
+                      />
+                      <Input
+                        value={collectionForm.text_color}
+                        onChange={(e) => setCollectionForm({ ...collectionForm, text_color: e.target.value })}
+                        placeholder="#ffffff"
+                        className="flex-1"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="image-url">Image URL</Label>
+                  <Input
+                    id="image-url"
+                    value={collectionForm.image_url}
+                    onChange={(e) => setCollectionForm({ ...collectionForm, image_url: e.target.value })}
+                    placeholder="https://example.com/image.jpg"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="button-text">Button Text</Label>
+                    <Input
+                      id="button-text"
+                      value={collectionForm.button_text}
+                      onChange={(e) => setCollectionForm({ ...collectionForm, button_text: e.target.value })}
+                      required
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="button-url">Button URL</Label>
+                    <Input
+                      id="button-url"
+                      value={collectionForm.button_url}
+                      onChange={(e) => setCollectionForm({ ...collectionForm, button_url: e.target.value })}
+                      placeholder="/"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="sort-order">Sort Order</Label>
+                  <Input
+                    id="sort-order"
+                    type="number"
+                    value={collectionForm.sort_order}
+                    onChange={(e) => setCollectionForm({ ...collectionForm, sort_order: parseInt(e.target.value) || 0 })}
+                  />
+                </div>
+
+                <div className="flex gap-2">
+                  <Button type="submit" disabled={submitting} className="flex-1">
+                    <Plus className="w-4 h-4 mr-2" />
+                    {submitting ? (editingCollection ? "Updating..." : "Adding...") : (editingCollection ? "Update Collection" : "Add Collection")}
+                  </Button>
+                  {editingCollection && (
+                    <Button type="button" variant="outline" onClick={() => {
+                      setEditingCollection(null);
+                      setCollectionForm({
+                        title: "",
+                        description: "",
+                        background_color: "#ff6b6b",
+                        text_color: "#ffffff",
+                        button_text: "Shop Now",
+                        button_url: "/",
+                        image_url: "",
+                        sort_order: 0
+                      });
+                    }}>
+                      Cancel
+                    </Button>
+                  )}
+                </div>
+              </form>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Existing Collections ({collections.length})</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4 max-h-[600px] overflow-y-auto">
+                {collections.map((collection) => (
+                  <div
+                    key={collection.id}
+                    className="flex items-center justify-between p-3 border rounded-lg gap-4"
+                  >
+                    <div className="flex items-center gap-3 flex-1">
+                      <div 
+                        className="w-8 h-8 rounded"
+                        style={{ backgroundColor: collection.background_color }}
+                      />
+                      <div className="flex-1">
+                        <h3 className="font-medium">{collection.title}</h3>
+                        <p className="text-sm text-muted-foreground">
+                          {collection.button_text} • Order: {collection.sort_order}
+                        </p>
+                        <div className="flex items-center gap-1 mt-1">
+                          <span className={`px-2 py-0.5 rounded text-xs ${
+                            collection.is_active 
+                              ? 'bg-green-100 text-green-800' 
+                              : 'bg-gray-100 text-gray-800'
+                          }`}>
+                            {collection.is_active ? 'Active' : 'Inactive'}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => toggleCollectionActive(collection.id, collection.is_active)}
+                        className="text-blue-600 hover:text-blue-800"
+                      >
+                        <Palette className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => editCollection(collection)}
+                        className="text-blue-600 hover:text-blue-800"
+                      >
+                        <Edit className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => deleteCollection(collection.id)}
+                        className="text-destructive hover:text-destructive"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
           </Card>
         </div>
       </TabsContent>

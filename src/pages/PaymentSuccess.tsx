@@ -15,38 +15,84 @@ export const PaymentSuccess = () => {
   useEffect(() => {
     const processPaymentSuccess = async () => {
       const paymentId = searchParams.get('pf_payment_id');
-      const orderId = searchParams.get('m_payment_id');
+      const tempOrderId = searchParams.get('m_payment_id');
       
-      if (orderId && paymentId) {
+      if (tempOrderId && paymentId) {
         try {
-          // Update order status to paid
-          const { error } = await supabase
-            .from('orders')
-            .update({
-              status: 'paid',
-              payment_id: paymentId,
-              updated_at: new Date().toISOString()
-            })
-            .eq('id', orderId);
-
-          if (error) {
-            console.error('Error updating order:', error);
+          // Get pending order data from localStorage
+          const pendingOrderData = localStorage.getItem('pending_order');
+          
+          if (!pendingOrderData) {
             toast({
-              title: "Warning",
-              description: "Payment processed but order status may not be updated",
+              title: "Error",
+              description: "No pending order found. Please contact support.",
               variant: "destructive"
             });
-          } else {
-            // Clear cart only after successful payment confirmation
-            clearCart();
-            
-            toast({
-              title: "Payment successful!",
-              description: "Your order has been processed successfully"
-            });
+            return;
           }
+
+          const orderData = JSON.parse(pendingOrderData);
+
+          // Now create the actual order in the database
+          const { data: order, error: orderError } = await supabase
+            .from('orders')
+            .insert([{
+              user_id: orderData.user_id,
+              email: orderData.email,
+              products: orderData.cartItems,
+              total_amount: orderData.totalAmount,
+              status: 'paid',
+              payment_id: paymentId,
+              delivery_phone: orderData.deliveryDetails?.phone,
+              delivery_email: orderData.deliveryDetails?.email,
+              delivery_address: orderData.deliveryDetails?.address,
+              delivery_city: orderData.deliveryDetails?.city,
+              delivery_province: orderData.deliveryDetails?.province,
+              delivery_postal_code: orderData.deliveryDetails?.postalCode
+            }])
+            .select()
+            .single();
+
+          if (orderError) {
+            throw orderError;
+          }
+
+          // Create order items
+          const orderItems = orderData.cartItems.map((item: any) => ({
+            order_id: order.id,
+            product_id: item.product.id,
+            product_name: item.product.name,
+            product_image: item.product.image_url,
+            quantity: item.quantity,
+            price: item.product.price,
+            selected_color: item.selectedColor,
+            selected_size: item.selectedSize
+          }));
+
+          const { error: itemsError } = await supabase
+            .from('order_items')
+            .insert(orderItems);
+
+          if (itemsError) {
+            throw itemsError;
+          }
+
+          // Clear pending order data and cart
+          localStorage.removeItem('pending_order');
+          clearCart();
+          
+          toast({
+            title: "Payment successful!",
+            description: "Your order has been processed successfully"
+          });
+
         } catch (error) {
           console.error('Error processing payment success:', error);
+          toast({
+            title: "Error",
+            description: "There was an error processing your order. Please contact support.",
+            variant: "destructive"
+          });
         }
       }
     };
