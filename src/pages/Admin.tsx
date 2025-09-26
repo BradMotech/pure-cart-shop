@@ -147,7 +147,16 @@ export default function Admin() {
     try {
       const { data, error } = await supabase
         .from("orders")
-        .select('*')
+        .select(`
+          *,
+          order_items(
+            *,
+            products(
+              name,
+              image_url
+            )
+          )
+        `)
         .order("created_at", { ascending: false });
 
       if (error) {
