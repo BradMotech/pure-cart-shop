@@ -8,6 +8,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { toast } from '@/hooks/use-toast';
 import { Navigate } from 'react-router-dom';
 import { Heart, ShoppingCart, Trash2 } from 'lucide-react';
+import Header from '@/components/Header';
 
 interface WishlistItem {
   id: string;
@@ -134,7 +135,9 @@ export default function Wishlist() {
   }
 
   return (
-    <div className="min-h-screen bg-background py-12 px-4">
+    <>
+      <Header />
+      <div className="min-h-screen bg-background py-12 px-4">
       <div className="max-w-6xl mx-auto">
         <div className="flex items-center gap-3 mb-8">
           <Heart className="w-8 h-8 text-primary" />
@@ -230,5 +233,6 @@ export default function Wishlist() {
         )}
       </div>
     </div>
+    </>
   );
 }

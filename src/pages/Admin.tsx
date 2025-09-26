@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import Loader from "@/components/Loader";
+import Header from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -641,7 +642,9 @@ export default function Admin() {
   }
 
   return (
-    <div className="min-h-screen bg-white p-6">
+    <>
+      <Header />
+      <div className="min-h-screen bg-white p-6">
       <div className="max-w-6xl mx-auto">
         <h1 className="text-3xl font-light mb-8">Admin Dashboard</h1>
 
@@ -1216,5 +1219,6 @@ export default function Admin() {
     </Tabs>
       </div>
     </div>
+    </>
   );
 }

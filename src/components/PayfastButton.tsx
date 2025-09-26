@@ -145,9 +145,6 @@ export const PayfastButton = ({ totalAmount, onSuccess, deliveryDetails }: Payfa
       form.submit();
       document.body.removeChild(form);
       
-      // Clear cart after successful payment initiation
-      clearCart();
-      
       if (onSuccess) {
         onSuccess();
       }

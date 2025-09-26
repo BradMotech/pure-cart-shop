@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { CheckCircle } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import Header from '@/components/Header';
 
 export const PaymentSuccess = () => {
   const navigate = useNavigate();
@@ -32,6 +33,9 @@ export const PaymentSuccess = () => {
             throw updateError;
           }
           
+          // Clear cart after successful payment
+          clearCart();
+          
           toast({
             title: "Payment successful!",
             description: "Your order has been processed successfully"
@@ -49,10 +53,12 @@ export const PaymentSuccess = () => {
     };
 
     processPaymentSuccess();
-  }, [searchParams]);
+  }, [searchParams, clearCart]);
 
   return (
-    <div className="min-h-screen bg-white flex items-center justify-center p-4">
+    <>
+      <Header />
+      <div className="min-h-screen bg-white flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
@@ -73,6 +79,7 @@ export const PaymentSuccess = () => {
         </CardContent>
       </Card>
     </div>
+    </>
   );
 };
 

@@ -7,7 +7,8 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from '@/hooks/use-toast';
 import { Navigate } from 'react-router-dom';
-import { User, ShoppingBag, Heart } from 'lucide-react';
+import { User, ShoppingBag, Heart, Trash2 } from 'lucide-react';
+import Header from '@/components/Header';
 
 interface Profile {
   id: string;
@@ -127,6 +128,51 @@ export default function Account() {
     setUpdating(false);
   };
 
+  const clearAllOrders = async () => {
+    if (!user) return;
+    
+    const { error } = await supabase
+      .from('orders')
+      .delete()
+      .eq('user_id', user.id);
+
+    if (error) {
+      toast({
+        title: "Error",
+        description: "Failed to clear orders",
+        variant: "destructive"
+      });
+    } else {
+      toast({
+        title: "Success",
+        description: "All orders cleared successfully"
+      });
+      fetchOrders();
+    }
+  };
+
+  const clearOrder = async (orderId: string) => {
+    const { error } = await supabase
+      .from('orders')
+      .delete()
+      .eq('id', orderId)
+      .eq('user_id', user?.id);
+
+    if (error) {
+      toast({
+        title: "Error",
+        description: "Failed to clear order",
+        variant: "destructive"
+      });
+    } else {
+      toast({
+        title: "Success",
+        description: "Order cleared successfully"
+      });
+      fetchOrders();
+    }
+  };
+
   const handleSignOut = async () => {
     await signOut();
     toast({
@@ -144,7 +190,9 @@ export default function Account() {
   }
 
   return (
-    <div className="min-h-screen bg-background py-12 px-4">
+    <>
+      <Header />
+      <div className="min-h-screen bg-background py-12 px-4">
       <div className="max-w-4xl mx-auto">
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-3xl font-light">My Account</h1>
@@ -189,9 +237,21 @@ export default function Account() {
 
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <ShoppingBag className="w-5 h-5" />
-                Recent Orders
+              <CardTitle className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <ShoppingBag className="w-5 h-5" />
+                  Recent Orders
+                </div>
+                {orders.length > 0 && (
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={clearAllOrders}
+                  >
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    Clear All
+                  </Button>
+                )}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -204,32 +264,29 @@ export default function Account() {
                       key={order.id}
                       className="flex items-center justify-between p-3 border rounded-lg"
                     >
-                      <div>
-                        <p className="font-medium">{order.email || 'No email'}</p>
+                      <div className="flex-1">
+                        <p className="font-medium">Order #{order.id.slice(0, 8)}</p>
                         {order.products && order.products.length > 0 &&
                           order.products.map((item: any, index) => (
-                            <>
-                            <p key={index} className="font-medium">
-                              Item: {item?.product?.name}
-                            </p>
-                            <p key={index} className="font-medium">
-                              Price: R {item?.product?.price}
-                            </p>
-                            </>
+                            <div key={index} className="text-sm text-muted-foreground">
+                              {item?.product?.name} (Qty: {item?.quantity || 1}) - R{item?.product?.price}
+                            </div>
                           ))}
-
-                        <p className="font-medium">
-                          Order #{order.id.slice(0, 8)}
-                        </p>
                         <p className="text-sm text-muted-foreground">
                           {new Date(order.created_at).toLocaleDateString()}
                         </p>
                       </div>
-                      <div className="text-right">
-                        <p className="font-medium">R{order.total_amount}</p>
-                        <p className="text-sm text-muted-foreground capitalize">
-                          {order.status}
-                        </p>
+                      <div className="text-right flex items-center gap-2">
+                        <div>
+                          <p className="font-medium">R{order.total_amount}</p>
+                        </div>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => clearOrder(order.id)}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
                       </div>
                     </div>
                   ))}
@@ -273,5 +330,6 @@ export default function Account() {
         </div>
       </div>
     </div>
+    </>
   );
 }
