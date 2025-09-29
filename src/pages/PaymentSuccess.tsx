@@ -16,69 +16,24 @@ export const PaymentSuccess = () => {
   useEffect(() => {
     const processPaymentSuccess = async () => {
       const paymentId = searchParams.get('pf_payment_id');
-      const paymentRef = searchParams.get('custom_str2');
+      const orderId = searchParams.get('custom_str2');
       
-      if (paymentId && paymentRef) {
+      if (paymentId && orderId) {
         try {
-          // Get pending order data from localStorage
-          const pendingOrderData = localStorage.getItem('pendingOrder');
-          if (!pendingOrderData) {
-            toast({
-              title: "Error",
-              description: "No pending order found",
-              variant: "destructive"
-            });
-            return;
-          }
-
-          const orderData = JSON.parse(pendingOrderData);
-          
-          // Create order in database
-          const { data: order, error: orderError } = await supabase
+          // Update order status to paid
+          const { error: updateError } = await supabase
             .from('orders')
-            .insert([{
-              user_id: orderData.userId,
-              email: orderData.userEmail,
-              products: orderData.items,
-              total_amount: orderData.totalAmount,
+            .update({
               status: 'paid',
-              payment_id: paymentId,
-              delivery_phone: orderData.deliveryDetails?.phone,
-              delivery_email: orderData.deliveryDetails?.email,
-              delivery_address: orderData.deliveryDetails?.address,
-              delivery_city: orderData.deliveryDetails?.city,
-              delivery_province: orderData.deliveryDetails?.province,
-              delivery_postal_code: orderData.deliveryDetails?.postalCode
-            }])
-            .select()
-            .single();
+              payment_id: paymentId
+            })
+            .eq('id', orderId);
 
-          if (orderError) {
-            throw orderError;
+          if (updateError) {
+            throw updateError;
           }
 
-          // Create order items
-          const orderItems = orderData.items.map((item: any) => ({
-            order_id: order.id,
-            product_id: item.product.id,
-            product_name: item.product.name,
-            product_image: item.product.image_url,
-            quantity: item.quantity,
-            price: item.product.price,
-            selected_color: item.selectedColor,
-            selected_size: item.selectedSize
-          }));
-
-          const { error: itemsError } = await supabase
-            .from('order_items')
-            .insert(orderItems);
-
-          if (itemsError) {
-            throw itemsError;
-          }
-
-          // Clear pending order data and cart
-          localStorage.removeItem('pendingOrder');
+          // Clear cart after successful payment
           clearCart();
           
           toast({

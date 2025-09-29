@@ -53,15 +53,48 @@ export const PayfastButton = ({ totalAmount, onSuccess, deliveryDetails }: Payfa
         .eq('id', user.id)
         .single();
 
-      // Store cart data in localStorage to retrieve after payment
-      const cartData = {
-        items: state.items,
-        totalAmount,
-        deliveryDetails,
-        userId: user.id,
-        userEmail: user.email
-      };
-      localStorage.setItem('pendingOrder', JSON.stringify(cartData));
+      // Create order with pending status
+      const { data: order, error: orderError } = await supabase
+        .from('orders')
+        .insert([{
+          user_id: user.id,
+          email: profile?.email || user.email,
+          products: state.items,
+          total_amount: totalAmount,
+          status: 'pending',
+          delivery_phone: deliveryDetails?.phone,
+          delivery_email: deliveryDetails?.email,
+          delivery_address: deliveryDetails?.address,
+          delivery_city: deliveryDetails?.city,
+          delivery_province: deliveryDetails?.province,
+          delivery_postal_code: deliveryDetails?.postalCode
+        }])
+        .select()
+        .single();
+
+      if (orderError) {
+        throw orderError;
+      }
+
+      // Create order items
+      const orderItems = state.items.map((item) => ({
+        order_id: order.id,
+        product_id: item.product.id,
+        product_name: item.product.name,
+        product_image: item.product.image_url,
+        quantity: item.quantity,
+        price: item.product.price,
+        selected_color: item.selectedColor,
+        selected_size: item.selectedSize
+      }));
+
+      const { error: itemsError } = await supabase
+        .from('order_items')
+        .insert(orderItems);
+
+      if (itemsError) {
+        throw itemsError;
+      }
 
       // Create Payfast payment form
       const merchant_id = '31303781'; // real merchant ID
@@ -69,9 +102,6 @@ export const PayfastButton = ({ totalAmount, onSuccess, deliveryDetails }: Payfa
       const return_url = `${window.location.origin}/payment-success`;
       const cancel_url = `${window.location.origin}/cart`;
       const notify_url = `https://tindaknujaloljfthmum.supabase.co/functions/v1/payfast-notify`;
-      
-      // Generate unique payment reference
-      const paymentRef = `${user.id}-${Date.now()}`;
       
       const paymentData = {
         merchant_id,
@@ -82,12 +112,12 @@ export const PayfastButton = ({ totalAmount, onSuccess, deliveryDetails }: Payfa
         name_first: profile?.full_name?.split(' ')[0] || 'Customer',
         name_last: profile?.full_name?.split(' ').slice(1).join(' ') || '',
         email_address: user.email || '',
-        m_payment_id: paymentRef,
+        m_payment_id: order.id,
         amount: totalAmount.toFixed(2),
-        item_name: `Cart Payment ${paymentRef.slice(0, 8)}`,
-        item_description: `${state.items.length} items from YW Clothing Store`,
+        item_name: 'Yewa Fashion Order',
+        item_description: `Order for ${state.items.length} items`,
         custom_str1: user.id,
-        custom_str2: paymentRef
+        custom_str2: order.id
       };
 
       // Create and submit form
