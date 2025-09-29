@@ -25,6 +25,11 @@ export const PayfastButton = ({ totalAmount, onSuccess, deliveryDetails }: Payfa
   const [processing, setProcessing] = useState(false);
 
   const handlePayment = async () => {
+    // Prevent multiple rapid clicks
+    if (processing) {
+      console.log('⚠️ Payment already in progress, ignoring click');
+      return;
+    }
     if (!user) {
       toast({
         title: "Authentication required",
@@ -44,6 +49,7 @@ export const PayfastButton = ({ totalAmount, onSuccess, deliveryDetails }: Payfa
     }
 
     setProcessing(true);
+    console.log('🚀 PayfastButton - Starting payment process');
 
     try {
       // Get user's profile for payment details
@@ -73,8 +79,11 @@ export const PayfastButton = ({ totalAmount, onSuccess, deliveryDetails }: Payfa
         .single();
 
       if (orderError) {
+        console.error('❌ Order creation failed:', orderError);
         throw orderError;
       }
+      
+      console.log('✅ Order created successfully:', order.id);
 
       // Create order items
       const orderItems = state.items.map((item) => ({
@@ -93,8 +102,11 @@ export const PayfastButton = ({ totalAmount, onSuccess, deliveryDetails }: Payfa
         .insert(orderItems);
 
       if (itemsError) {
+        console.error('❌ Order items creation failed:', itemsError);
         throw itemsError;
       }
+      
+      console.log('✅ Order items created successfully:', orderItems.length, 'items');
 
       // Create Payfast payment form
       const merchant_id = '31303781'; // real merchant ID

@@ -19,6 +19,7 @@ export const PaymentSuccess = () => {
       const orderId = searchParams.get('custom_str2');
       
       if (paymentId && orderId) {
+        console.log('🔄 PaymentSuccess - Processing payment:', { paymentId, orderId });
         try {
           // Update order status to paid
           const { error: updateError } = await supabase
@@ -30,8 +31,11 @@ export const PaymentSuccess = () => {
             .eq('id', orderId);
 
           if (updateError) {
+            console.error('❌ Failed to update order status:', updateError);
             throw updateError;
           }
+          
+          console.log('✅ Order status updated to paid for order:', orderId);
 
           // Clear cart after successful payment
           clearCart();
