@@ -23,6 +23,7 @@ interface Order {
   created_at: string;
   email?: string | null;
   products?: any[] | null;
+  order_items?: any[] | null;
   delivery_phone?: string | null;
   delivery_email?: string | null;
   delivery_address?: string | null;
@@ -266,12 +267,37 @@ export default function Account() {
                     >
                       <div className="flex-1">
                         <p className="font-medium">Order #{order.id.slice(0, 8)}</p>
-                        {order.products && order.products.length > 0 &&
-                          order.products.map((item: any, index) => (
-                            <div key={index} className="text-sm text-muted-foreground">
-                              {item?.product?.name} (Qty: {item?.quantity || 1}) - R{item?.product?.price}
+                        <p className="text-sm text-muted-foreground">
+                          Status: <span className={`font-medium ${
+                            order.status === 'paid' 
+                              ? 'text-green-600' 
+                              : order.status === 'pending'
+                              ? 'text-yellow-600'
+                              : 'text-gray-600'
+                          }`}>
+                            {order.status?.charAt(0).toUpperCase() + order.status?.slice(1) || 'Unknown'}
+                          </span>
+                        </p>
+                        {order.order_items && order.order_items.length > 0 ? (
+                          order.order_items.map((item: any, index) => (
+                            <div key={index} className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
+                              {item.product_image && (
+                                <img 
+                                  src={item.product_image} 
+                                  alt={item.product_name}
+                                  className="w-6 h-6 object-cover rounded"
+                                />
+                              )}
+                              <span>
+                                {item.product_name} (Qty: {item.quantity}) - R{item.price}
+                                {item.selected_color && ` • ${item.selected_color}`}
+                                {item.selected_size && ` • ${item.selected_size}`}
+                              </span>
                             </div>
-                          ))}
+                          ))
+                        ) : (
+                          <p className="text-sm text-muted-foreground">No items found</p>
+                        )}
                         <p className="text-sm text-muted-foreground">
                           {new Date(order.created_at).toLocaleDateString()}
                         </p>

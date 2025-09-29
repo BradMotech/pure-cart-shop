@@ -1203,8 +1203,14 @@ export default function Admin() {
                       </div>
                       <div className="text-right">
                         <p className="font-medium">R{order.total_amount}</p>
-                        <span className="px-2 py-1 rounded text-xs bg-green-100 text-green-800">
-                          Paid
+                        <span className={`px-2 py-1 rounded text-xs ${
+                          order.status === 'paid' 
+                            ? 'bg-green-100 text-green-800' 
+                            : order.status === 'pending'
+                            ? 'bg-yellow-100 text-yellow-800'
+                            : 'bg-gray-100 text-gray-800'
+                        }`}>
+                          {order.status?.charAt(0).toUpperCase() + order.status?.slice(1) || 'Unknown'}
                         </span>
                       </div>
                     </div>
