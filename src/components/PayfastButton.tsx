@@ -46,49 +46,6 @@ export const PayfastButton = ({ totalAmount, onSuccess, deliveryDetails }: Payfa
     setProcessing(true);
 
     try {
-      // Create order in database first
-      const { data: order, error: orderError } = await supabase
-        .from('orders')
-        .insert([{
-          user_id: user.id,
-          email: user.email,
-          products: state.items,
-          total_amount: totalAmount,
-          status: 'pending',
-          delivery_phone: deliveryDetails?.phone,
-          delivery_email: deliveryDetails?.email,
-          delivery_address: deliveryDetails?.address,
-          delivery_city: deliveryDetails?.city,
-          delivery_province: deliveryDetails?.province,
-          delivery_postal_code: deliveryDetails?.postalCode
-        }])
-        .select()
-        .single();
-
-      if (orderError) {
-        throw orderError;
-      }
-
-      // Create order items
-      const orderItems = state.items.map((item: any) => ({
-        order_id: order.id,
-        product_id: item.product.id,
-        product_name: item.product.name,
-        product_image: item.product.image_url,
-        quantity: item.quantity,
-        price: item.product.price,
-        selected_color: item.selectedColor,
-        selected_size: item.selectedSize
-      }));
-
-      const { error: itemsError } = await supabase
-        .from('order_items')
-        .insert(orderItems);
-
-      if (itemsError) {
-        throw itemsError;
-      }
-
       // Get user's profile for payment details
       const { data: profile } = await supabase
         .from('profiles')
@@ -96,17 +53,25 @@ export const PayfastButton = ({ totalAmount, onSuccess, deliveryDetails }: Payfa
         .eq('id', user.id)
         .single();
 
+      // Store cart data in localStorage to retrieve after payment
+      const cartData = {
+        items: state.items,
+        totalAmount,
+        deliveryDetails,
+        userId: user.id,
+        userEmail: user.email
+      };
+      localStorage.setItem('pendingOrder', JSON.stringify(cartData));
+
       // Create Payfast payment form
-       // Thabanin merchant key and id
-    // Merchant ID: 31303781
-    // Merchant Key: k8jdwm8jgjz5e
-      // const merchant_id = '10000100'; // Sandbox merchant ID
-      // const merchant_key = '46f0cd694581a'; // Sandbox merchant key
       const merchant_id = '31303781'; // real merchant ID
       const merchant_key = 'k8jdwm8jgjz5e'; // real merchant key
       const return_url = `${window.location.origin}/payment-success`;
-      const cancel_url = `${window.location.origin}/cart`; // unchanged
+      const cancel_url = `${window.location.origin}/cart`;
       const notify_url = `https://tindaknujaloljfthmum.supabase.co/functions/v1/payfast-notify`;
+      
+      // Generate unique payment reference
+      const paymentRef = `${user.id}-${Date.now()}`;
       
       const paymentData = {
         merchant_id,
@@ -117,19 +82,18 @@ export const PayfastButton = ({ totalAmount, onSuccess, deliveryDetails }: Payfa
         name_first: profile?.full_name?.split(' ')[0] || 'Customer',
         name_last: profile?.full_name?.split(' ').slice(1).join(' ') || '',
         email_address: user.email || '',
-        m_payment_id: order.id,
+        m_payment_id: paymentRef,
         amount: totalAmount.toFixed(2),
-        item_name: `Order #${order.id.slice(0, 8)}`,
+        item_name: `Cart Payment ${paymentRef.slice(0, 8)}`,
         item_description: `${state.items.length} items from YW Clothing Store`,
         custom_str1: user.id,
-        custom_str2: order.id
+        custom_str2: paymentRef
       };
 
       // Create and submit form
       const form = document.createElement('form');
       form.method = 'POST';
-      // form.action = 'https://sandbox.payfast.co.za/eng/process'; // Use production URL for live
-      form.action = 'https://www.payfast.co.za/eng/process'; // Use production URL for live
+      form.action = 'https://www.payfast.co.za/eng/process';
       
       Object.entries(paymentData).forEach(([key, value]) => {
         if (value) {

@@ -107,12 +107,13 @@ export default function Admin() {
     title: "",
     description: "",
     background_color: "#ff6b6b",
-    text_color: "#ffffff",
+    text_color: "#ffffff", 
     button_text: "Shop Now",
     button_url: "/",
     image_url: "",
     sort_order: 0
   });
+  const [collectionImageFile, setCollectionImageFile] = useState<File | null>(null);
   const [imageFiles, setImageFiles] = useState<File[]>([]);
   const [editingProduct, setEditingProduct] = useState<DatabaseProduct | null>(null);
   const [editingCollection, setEditingCollection] = useState<Collection | null>(null);
@@ -514,6 +515,26 @@ export default function Admin() {
     setSubmitting(true);
 
     try {
+      let imageUrl = collectionForm.image_url;
+
+      // Upload new image if selected
+      if (collectionImageFile) {
+        const fileExt = collectionImageFile.name.split('.').pop();
+        const fileName = `collection-${Date.now()}.${fileExt}`;
+        
+        const { error: uploadError } = await supabase.storage
+          .from('product-images')
+          .upload(fileName, collectionImageFile);
+
+        if (uploadError) throw uploadError;
+
+        const { data: { publicUrl } } = supabase.storage
+          .from('product-images')
+          .getPublicUrl(fileName);
+
+        imageUrl = publicUrl;
+      }
+
       const collectionData = {
         title: collectionForm.title,
         description: collectionForm.description,
@@ -521,7 +542,7 @@ export default function Admin() {
         text_color: collectionForm.text_color,
         button_text: collectionForm.button_text,
         button_url: collectionForm.button_url,
-        image_url: collectionForm.image_url,
+        image_url: imageUrl,
         sort_order: collectionForm.sort_order,
         is_active: true
       };
@@ -562,6 +583,7 @@ export default function Admin() {
           image_url: "",
           sort_order: 0
         });
+        setCollectionImageFile(null);
         setEditingCollection(null);
         fetchCollections();
       }
@@ -998,13 +1020,31 @@ export default function Admin() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="image-url">Image URL</Label>
+                  <Label htmlFor="collection-image">Collection Image</Label>
                   <Input
-                    id="image-url"
-                    value={collectionForm.image_url}
-                    onChange={(e) => setCollectionForm({ ...collectionForm, image_url: e.target.value })}
-                    placeholder="https://example.com/image.jpg"
+                    id="collection-image"
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      setCollectionImageFile(file || null);
+                    }}
                   />
+                  {collectionImageFile && (
+                    <p className="text-sm text-muted-foreground">
+                      Selected: {collectionImageFile.name}
+                    </p>
+                  )}
+                  {collectionForm.image_url && !collectionImageFile && (
+                    <div className="flex items-center gap-2">
+                      <img 
+                        src={collectionForm.image_url} 
+                        alt="Current" 
+                        className="w-16 h-16 object-cover rounded"
+                      />
+                      <span className="text-sm text-muted-foreground">Current image</span>
+                    </div>
+                  )}
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
@@ -1046,19 +1086,20 @@ export default function Admin() {
                     {submitting ? (editingCollection ? "Updating..." : "Adding...") : (editingCollection ? "Update Collection" : "Add Collection")}
                   </Button>
                   {editingCollection && (
-                    <Button type="button" variant="outline" onClick={() => {
-                      setEditingCollection(null);
-                      setCollectionForm({
-                        title: "",
-                        description: "",
-                        background_color: "#ff6b6b",
-                        text_color: "#ffffff",
-                        button_text: "Shop Now",
-                        button_url: "/",
-                        image_url: "",
-                        sort_order: 0
-                      });
-                    }}>
+                     <Button type="button" variant="outline" onClick={() => {
+                       setEditingCollection(null);
+                       setCollectionImageFile(null);
+                       setCollectionForm({
+                         title: "",
+                         description: "",
+                         background_color: "#ff6b6b",
+                         text_color: "#ffffff",
+                         button_text: "Shop Now",
+                         button_url: "/",
+                         image_url: "",
+                         sort_order: 0
+                       });
+                     }}>
                       Cancel
                     </Button>
                   )}

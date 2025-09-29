@@ -63,7 +63,7 @@ serve(async (req) => {
   } catch (error) {
     console.error('Error in etenders-proxy function:', error);
     return new Response(JSON.stringify({ 
-      error: error.message || 'Failed to fetch data from eTenders API' 
+      error: error instanceof Error ? error.message : 'Failed to fetch data from eTenders API' 
     }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

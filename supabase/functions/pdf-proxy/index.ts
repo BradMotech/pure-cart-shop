@@ -68,7 +68,7 @@ serve(async (req) => {
   } catch (error) {
     console.error('Error in pdf-proxy function:', error);
     return new Response(JSON.stringify({ 
-      error: error.message || 'Failed to fetch PDF document',
+      error: error instanceof Error ? error.message : 'Failed to fetch PDF document',
       details: 'This may be due to CORS restrictions or the document may not be accessible.'
     }), {
       status: 500,
