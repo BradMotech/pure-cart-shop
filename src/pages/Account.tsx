@@ -281,15 +281,19 @@ export default function Account() {
                         {order.order_items && order.order_items.length > 0 ? (
                           order.order_items.map((item: any, index) => (
                             <div key={index} className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
-                              {item.product_image && (
+                              {(item.product_image || item.products?.image_url) && (
                                 <img 
-                                  src={item.product_image} 
-                                  alt={item.product_name}
-                                  className="w-6 h-6 object-cover rounded"
+                                  src={item.product_image || item.products?.image_url} 
+                                  alt={item.product_name || item.products?.name}
+                                  className="w-8 h-8 object-cover rounded"
+                                  onError={(e) => {
+                                    console.log('Image failed to load:', item.product_image, item.products?.image_url);
+                                    e.currentTarget.style.display = 'none';
+                                  }}
                                 />
                               )}
                               <span>
-                                {item.product_name} (Qty: {item.quantity}) - R{item.price}
+                                {item.product_name || item.products?.name} (Qty: {item.quantity}) - R{item.price}
                                 {item.selected_color && ` • ${item.selected_color}`}
                                 {item.selected_size && ` • ${item.selected_size}`}
                               </span>
