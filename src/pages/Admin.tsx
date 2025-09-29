@@ -647,6 +647,55 @@ export default function Admin() {
     }
   };
 
+  const handleDeleteOrder = async (orderId: string) => {
+    if (!window.confirm("Are you sure you want to delete this order? This action cannot be undone.")) {
+      return;
+    }
+
+    try {
+      // First delete all order items
+      const { error: itemsError } = await supabase
+        .from('order_items')
+        .delete()
+        .eq('order_id', orderId);
+
+      if (itemsError) {
+        toast({
+          title: "Error",
+          description: "Failed to delete order items",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Then delete the order
+      const { error: orderError } = await supabase
+        .from('orders')
+        .delete()
+        .eq('id', orderId);
+
+      if (orderError) {
+        toast({
+          title: "Error",
+          description: "Failed to delete order",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Success",
+          description: "Order deleted successfully",
+        });
+        fetchOrders();
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred",
+        variant: "destructive",
+      });
+    }
+  };
+
   if (loading) {
     return <Loader fullScreen text="Loading admin panel..." />;
   }
@@ -1201,17 +1250,27 @@ export default function Admin() {
                           Items: {order?.order_items?.reduce((total, item) => total + item.quantity, 0) || 0}
                         </p>
                       </div>
-                      <div className="text-right">
-                        <p className="font-medium">R{order.total_amount}</p>
-                        <span className={`px-2 py-1 rounded text-xs ${
-                          order.status === 'paid' 
-                            ? 'bg-green-100 text-green-800' 
-                            : order.status === 'pending'
-                            ? 'bg-yellow-100 text-yellow-800'
-                            : 'bg-gray-100 text-gray-800'
-                        }`}>
-                          {order.status?.charAt(0).toUpperCase() + order.status?.slice(1) || 'Unknown'}
-                        </span>
+                      <div className="flex items-center gap-3">
+                        <div className="text-right">
+                          <p className="font-medium">R{order.total_amount}</p>
+                          <span className={`px-2 py-1 rounded text-xs ${
+                            order.status === 'paid' 
+                              ? 'bg-green-100 text-green-800' 
+                              : order.status === 'pending'
+                              ? 'bg-yellow-100 text-yellow-800'
+                              : 'bg-gray-100 text-gray-800'
+                          }`}>
+                            {order.status?.charAt(0).toUpperCase() + order.status?.slice(1) || 'Unknown'}
+                          </span>
+                        </div>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleDeleteOrder(order.id)}
+                          className="p-2 text-red-600 hover:text-red-700 hover:bg-red-50"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
                       </div>
                     </div>
                     
