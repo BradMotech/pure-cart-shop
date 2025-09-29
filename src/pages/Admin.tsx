@@ -90,6 +90,7 @@ export default function Admin() {
   const { user, isAdmin, loading } = useAuth();
   const [products, setProducts] = useState<DatabaseProduct[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
+  const [orderSearchTerm, setOrderSearchTerm] = useState("");
   const [collections, setCollections] = useState<Collection[]>([]);
   const [formData, setFormData] = useState({
     name: "",
@@ -1228,13 +1229,36 @@ export default function Admin() {
         <Card>
           <CardHeader>
             <CardTitle>Recent Orders ({orders?.filter((item)=> item?.order_items?.length > 0).length})</CardTitle>
+            <div className="flex gap-4 mt-4">
+              <Input
+                placeholder="Search by email or order number..."
+                value={orderSearchTerm}
+                onChange={(e) => setOrderSearchTerm(e.target.value)}
+                className="max-w-md"
+              />
+            </div>
           </CardHeader>
           <CardContent>
             <div className="space-y-4 max-h-[800px] overflow-y-auto">
-              {orders.length === 0 ? (
-                <p className="text-gray-500 text-center py-8">No orders found</p>
-              ) : (
-                orders?.filter((item)=> item?.order_items?.length > 0).map((order) => (
+              {(() => {
+                const filteredOrders = orders
+                  ?.filter((item) => item?.order_items?.length > 0)
+                  ?.filter((order) => {
+                    if (!orderSearchTerm) return true;
+                    const searchLower = orderSearchTerm.toLowerCase();
+                    return (
+                      order.email?.toLowerCase().includes(searchLower) ||
+                      order.delivery_email?.toLowerCase().includes(searchLower) ||
+                      order.id.toLowerCase().includes(searchLower)
+                    );
+                  });
+                
+                return filteredOrders?.length === 0 ? (
+                  <p className="text-gray-500 text-center py-8">
+                    {orderSearchTerm ? "No orders found matching your search" : "No orders found"}
+                  </p>
+                ) : (
+                  filteredOrders?.map((order) => (
                   <div
                     key={order.id}
                     className="border rounded-lg p-4 space-y-3"
@@ -1326,7 +1350,8 @@ export default function Admin() {
                     )}
                   </div>
                 ))
-              )}
+                );
+              })()}
             </div>
           </CardContent>
         </Card>
