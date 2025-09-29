@@ -243,7 +243,7 @@ export default function Account() {
                   <ShoppingBag className="w-5 h-5" />
                   Recent Orders
                 </div>
-                {orders.length > 0 && (
+                {orders?.filter((item)=> item?.order_items?.length > 0)?.length > 0 && (
                   <Button 
                     variant="outline" 
                     size="sm"
@@ -256,11 +256,11 @@ export default function Account() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {orders.length === 0 ? (
+              {orders?.filter((item)=> item?.order_items?.length > 0)?.length === 0 ? (
                 <p className="text-muted-foreground">No orders yet</p>
               ) : (
                 <div className="space-y-3">
-                  {orders.map((order) => (
+                  {orders?.filter((item)=> item?.order_items?.length > 0)?.map((order) => (
                     <div
                       key={order.id}
                       className="flex items-center justify-between p-3 border rounded-lg"

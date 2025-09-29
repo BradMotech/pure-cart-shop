@@ -683,7 +683,7 @@ export default function Admin() {
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="products">Products</TabsTrigger>
             <TabsTrigger value="collections">Carousel</TabsTrigger>
-            <TabsTrigger value="orders">Orders ({orders.length})</TabsTrigger>
+            <TabsTrigger value="orders">Orders ({orders?.filter((item)=> item?.order_items?.length > 0).length})</TabsTrigger>
           </TabsList>
 
           <TabsContent value="products" className="space-y-6">
@@ -1178,14 +1178,14 @@ export default function Admin() {
       <TabsContent value="orders" className="space-y-6">
         <Card>
           <CardHeader>
-            <CardTitle>Recent Orders ({orders.length})</CardTitle>
+            <CardTitle>Recent Orders ({orders?.filter((item)=> item?.order_items?.length > 0).length})</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4 max-h-[800px] overflow-y-auto">
               {orders.length === 0 ? (
                 <p className="text-gray-500 text-center py-8">No orders found</p>
               ) : (
-                orders.map((order) => (
+                orders?.filter((item)=> item?.order_items?.length > 0).map((order) => (
                   <div
                     key={order.id}
                     className="border rounded-lg p-4 space-y-3"
