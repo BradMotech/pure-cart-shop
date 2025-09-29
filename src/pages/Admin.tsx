@@ -1152,7 +1152,7 @@ export default function Admin() {
                     <div className="flex justify-between items-start">
                       <div>
                         <h3 className="font-medium">Order #{order.id.slice(0, 8)}</h3>
-                        <p className="text-sm text-gray-600">{order.email || 'No email'}</p>
+                        {/* <p className="text-sm text-gray-600">{order.email || 'No email'}</p> */}
                         <p className="text-sm text-gray-500">
                           {new Date(order.created_at).toLocaleDateString()} at {new Date(order.created_at).toLocaleTimeString()}
                         </p>

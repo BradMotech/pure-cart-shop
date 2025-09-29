@@ -96,7 +96,7 @@ const Header = () => {
               onClick={() => location.pathname === '/cart' ? toggleCart() : navigate('/cart')}
               className="relative p-2 hover:bg-gray-100"
             >
-              <ShoppingBag className="h-5 w-5 text-gray-700" />
+              <ShoppingBag className="h-5 w-5 text-green-700" />
               {totalItems > 0 && (
                 <span className="absolute -top-1 -right-1 bg-black text-white text-xs rounded-full h-4 w-4 flex items-center justify-center text-[10px]">
                   {totalItems}
